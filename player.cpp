@@ -81,10 +81,10 @@ void DrawPlayerOffset(int no);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
+static ID3D11Buffer* g_VertexBuffer = NULL;				// 頂点情報
 
 static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
-static ID3D11ShaderResourceView	*g_State[PLAYER_STATE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11ShaderResourceView* g_State[PLAYER_STATE_MAX] = { NULL };	// テクスチャ情報
 static ID3D11ShaderResourceView* g_Effect[EFFECT_MAX] = { NULL };	// テクスチャ情報
 
 static char* g_TextureName[TEXTURE_MAX] = {
@@ -93,7 +93,7 @@ static char* g_TextureName[TEXTURE_MAX] = {
 		"data/TEXTURE/heroicon.png",
 };
 
-static char *g_StateName[PLAYER_STATE_MAX] = {
+static char* g_StateName[PLAYER_STATE_MAX] = {
 	"data/CHARA/player_stand.png",		//STAND
 	"data/CHARA/player_run.png",		//WALK
 	"data/CHARA/player_guard.png",		//GUARD
@@ -136,7 +136,7 @@ static int		g_jumpinFrame;
 static int		g_bulletTime;
 static float	g_deadCnt;
 static float	g_gravityCnt;
-static DWORD    g_start_time; 
+static DWORD    g_start_time;
 BOOL			g_Changable;
 BOOL			g_Ult;
 
@@ -159,7 +159,7 @@ XMFLOAT3 g_SavePoint[SAVEPOINT_MAX];
 //=============================================================================
 HRESULT InitPlayer(void)
 {
-	ID3D11Device *pDevice = GetDevice();
+	ID3D11Device* pDevice = GetDevice();
 
 	g_bulletTime = 0;
 	g_clickpos = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -226,39 +226,39 @@ HRESULT InitPlayer(void)
 	// プレイヤー構造体の初期化
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		g_Player[i].use  = TRUE;
-		g_Player[i].pos  = XMFLOAT3(100.0f, 0.0f, 0.0f);	// 中心点から表示
+		g_Player[i].use = TRUE;
+		g_Player[i].pos = XMFLOAT3(100.0f, 0.0f, 0.0f);	// 中心点から表示
 		g_Player[i].opos = g_Player[i].pos;
-		g_Player[i].rot  = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		g_Player[i].w = TEXTURE_WIDTH ;
+		g_Player[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		g_Player[i].w = TEXTURE_WIDTH;
 		g_Player[i].h = TEXTURE_HEIGHT;
 		g_Player[i].countAnim = 0;
 		g_Player[i].patternAnim = 0;
 		g_Player[i].texNo = 2;
 		g_Player[i].time = 0;
 		//基本ステータス
-		
-		g_Player[i].dir   = CHAR_DIR_RIGHT;					// 向き（0:上 1:右 2:下 3:左）
+
+		g_Player[i].dir = CHAR_DIR_RIGHT;					// 向き（0:上 1:右 2:下 3:左）
 		g_Player[i].state = PLAYER_STATE_STAND;				//プレイヤーの状態
 		g_Player[i].prestate = g_Player[i].state;			//前の状態
 
 		g_Player[i].life = 2;
-		g_Player[i].hp   = PLAYER_HP_MAX;
+		g_Player[i].hp = PLAYER_HP_MAX;
 		g_Player[i].mp = PLAYER_MP_MAX;
 
 		g_Player[i].str = 35.0f;
 		g_Player[i].jumptimes = 2;
-		g_Player[i].jumpplus  = 4.0f;
+		g_Player[i].jumpplus = 4.0f;
 		g_Player[i].move = XMFLOAT3(6.0f, 0.0f, 0.0f);		// 移動量
 		g_Player[i].flashCnt = 0;		// 移動量
 		g_Player[i].flashExeTimer = 0.0f;
 		g_Player[i].flashExeCnt = 0;
 		//ステートフラグ
 		g_Player[i].moving = FALSE;							// 移動中フラグ
-		g_Player[i].flash  = FALSE;							// 移動中フラグ
+		g_Player[i].flash = FALSE;							// 移動中フラグ
 		g_Player[i].onGround = FALSE;
-		g_Player[i].attack   = FALSE;
-		g_Player[i].bullet   = FALSE;
+		g_Player[i].attack = FALSE;
+		g_Player[i].bullet = FALSE;
 		g_Player[i].jump = FALSE;
 
 
@@ -272,9 +272,9 @@ HRESULT InitPlayer(void)
 		//g_Player[i].bulletTime = 0;
 		// 
 		//ヒット
-		g_Player[i].hit= FALSE;		//ヒットされている
+		g_Player[i].hit = FALSE;		//ヒットされている
 		g_Player[i].hitting = FALSE;		//ヒットされている
-		g_Player[i].hitdir	= CHAR_DIR_LEFT;			//ヒットされているの方向
+		g_Player[i].hitdir = CHAR_DIR_LEFT;			//ヒットされているの方向
 		g_Player[i].hitCnt = 0;
 		g_Player[i].clearCnt = 0;
 		g_Player[i].clear = FALSE;
@@ -312,11 +312,11 @@ HRESULT InitPlayer(void)
 
 		break;
 	}
-	
+
 	InitPlayerIcon();
 
-	
-	
+
+
 	g_Load = TRUE;
 	return S_OK;
 }
@@ -360,7 +360,7 @@ void UninitPlayer(void)
 			g_Effect[i] = NULL;
 		}
 	}
-	
+
 	g_Load = FALSE;
 }
 
@@ -383,7 +383,7 @@ void UpdatePlayer(void)
 				//if (g_Player[i].life > 0) SetFade(FADE_OUT, MODE_GAME);
 				if (GetMode() == MODE_GAME)
 				{
-					SetResult(GAMEOVER,GAME);
+					SetResult(GAMEOVER, GAME);
 					SetFade(FADE_OUT, MODE_RESULT);
 
 				}
@@ -405,331 +405,331 @@ void UpdatePlayer(void)
 
 		// 生きてるプレイヤーだけ処理をする
 
-			if (g_Player[i].pos.x >= 1900.0f && g_Player[i].pos.y >= 2800.0f)SetFade(FADE_OUT, MODE_BOSS);
-			// 地形との当たり判定用に座標のバックアップを取っておく
+		if (g_Player[i].pos.x >= 1900.0f && g_Player[i].pos.y >= 2800.0f)SetFade(FADE_OUT, MODE_BOSS);
+		// 地形との当たり判定用に座標のバックアップを取っておく
 
-			g_Player[i].opos = g_Player[i].pos;
-			g_Player[i].prestate = g_Player[i].state;
+		g_Player[i].opos = g_Player[i].pos;
+		g_Player[i].prestate = g_Player[i].state;
 
-			if (g_Player[i].mp <= PLAYER_MP_MAX)g_Player[i].mp += 0.1f;
+		if (g_Player[i].mp <= PLAYER_MP_MAX)g_Player[i].mp += 0.1f;
 
 
-			{// アニメーション  
+		{// アニメーション  
 
-				if (g_Player[i].countAnim++ > g_player_state_AnimeMax[g_Player[i].state][3])
-				{
-					g_Player[i].countAnim = 0.0f;
-					// パターンの切り替え
-					g_Player[i].patternAnim = (g_Player[i].patternAnim + 1) % g_player_state_AnimeMax[g_Player[i].state][0];
-				}
+			if (g_Player[i].countAnim++ > g_player_state_AnimeMax[g_Player[i].state][3])
+			{
+				g_Player[i].countAnim = 0.0f;
+				// パターンの切り替え
+				g_Player[i].patternAnim = (g_Player[i].patternAnim + 1) % g_player_state_AnimeMax[g_Player[i].state][0];
 			}
+		}
 
-		
-			{	// 分身用
-				for (int j = PLAYER_OFFSET_CNT - 1; j > 0; j--)
-				{
-					g_Player[i].offset[j] = g_Player[i].offset[j - 1];
-				}
-				g_Player[i].offset[0] = g_Player[i].opos;
+
+		{	// 分身用
+			for (int j = PLAYER_OFFSET_CNT - 1; j > 0; j--)
+			{
+				g_Player[i].offset[j] = g_Player[i].offset[j - 1];
 			}
+			g_Player[i].offset[0] = g_Player[i].opos;
+		}
 
-			{// キー入力で移動 
-				XMFLOAT3 nextpos = g_Player[i].pos;
-				float speed = g_Player[i].move.x;
+		{// キー入力で移動 
+			XMFLOAT3 nextpos = g_Player[i].pos;
+			float speed = g_Player[i].move.x;
 
 
-				if (g_Player[i].state != PLAYER_STATE_BLADE && 
-					g_Player[i].state != PLAYER_STATE_BULLET &&
-					g_Player[i].state != PLAYER_STATE_ULT &&
-					g_Player[i].state != PLAYER_STATE_GUARD
-					)
+			if (g_Player[i].state != PLAYER_STATE_BLADE &&
+				g_Player[i].state != PLAYER_STATE_BULLET &&
+				g_Player[i].state != PLAYER_STATE_ULT &&
+				g_Player[i].state != PLAYER_STATE_GUARD
+				)
+			{
+				//if (GetKeyboardTrigger(DIK_LSHIFT) || IsButtonPressed(0, BUTTON_B))
+				//{
+				//	g_Player[i].dash = TRUE;
+				//	speed *= 4;
+				//	//if (g_Player[i].dir == CHAR_DIR_RIGHT)nextpos.x += 20.0f;
+				//	//else if (g_Player[i].dir == CHAR_DIR_LEFT)nextpos.x -= 20.0f;
+
+				//}
+
+
+				if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
 				{
-					//if (GetKeyboardTrigger(DIK_LSHIFT) || IsButtonPressed(0, BUTTON_B))
-					//{
-					//	g_Player[i].dash = TRUE;
-					//	speed *= 4;
-					//	//if (g_Player[i].dir == CHAR_DIR_RIGHT)nextpos.x += 20.0f;
-					//	//else if (g_Player[i].dir == CHAR_DIR_LEFT)nextpos.x -= 20.0f;
 
-					//}
+					g_Player[i].state = PLAYER_STATE_WALK;
+					g_Player[i].dir = CHAR_DIR_RIGHT;
+					nextpos.x += speed;
+				}
+				else if (GetKeyboardPress(DIK_A) || IsButtonPressed(0, BUTTON_LEFT))
+				{
+					g_Player[i].state = PLAYER_STATE_WALK;
+					g_Player[i].dir = CHAR_DIR_LEFT;
+
+					nextpos.x -= speed;
+				}
 
 
-					if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
+				{//フラッシュ
+					if (((GetKeyboardTrigger(DIK_D) || IsButtonTriggered(0, BUTTON_RIGHT)) ||
+						(GetKeyboardTrigger(DIK_A) || IsButtonTriggered(0, BUTTON_LEFT))) &&
+						g_Player[i].flash == FALSE)
 					{
-						
-						g_Player[i].state = PLAYER_STATE_WALK;
-						g_Player[i].dir = CHAR_DIR_RIGHT;
-						nextpos.x += speed;
+						g_Player[i].moving = TRUE;
+						g_Player[i].flashExeTimer = 0.0f;
+						g_Player[i].flashExeCnt++;
 					}
-					else if (GetKeyboardPress(DIK_A) || IsButtonPressed(0, BUTTON_LEFT))
+					if (g_Player[i].moving == TRUE)
 					{
-						g_Player[i].state = PLAYER_STATE_WALK;
-						g_Player[i].dir = CHAR_DIR_LEFT;
+						g_Player[i].flashExeTimer += GetDeltatime();
 
-						nextpos.x -= speed;
-					}
-
-					
-					{//フラッシュ
-						if (((GetKeyboardTrigger(DIK_D) || IsButtonTriggered(0, BUTTON_RIGHT))||
-							 (GetKeyboardTrigger(DIK_A) || IsButtonTriggered(0, BUTTON_LEFT)))&&
-							g_Player[i].flash == FALSE)
+						if (g_Player[i].flashExeTimer > PLAYER_FLASH_TIMES_MAX * 1000.0f)
 						{
-							g_Player[i].moving = TRUE;
+							g_Player[i].moving = FALSE;
 							g_Player[i].flashExeTimer = 0.0f;
-							g_Player[i].flashExeCnt++;
-						}
-						if (g_Player[i].moving == TRUE)
-						{
-							g_Player[i].flashExeTimer += GetDeltatime();
-
-							if (g_Player[i].flashExeTimer > PLAYER_FLASH_TIMES_MAX * 1000.0f)
-							{
-								g_Player[i].moving = FALSE;
-								g_Player[i].flashExeTimer = 0.0f;
-								g_Player[i].flashExeCnt = 0;
-							}
-						}
-						if (g_Player[i].flashExeCnt >= 2)
-						{
-							g_Player[i].flash = TRUE;
-							PlayerFlash(&nextpos,i);
-						}
-						else g_Player[i].flash = FALSE;
-
-					}
-					
-					//移動後フィールドとの当たり判定
-
-					if (!WaistFieldCollision(nextpos, TEXTURE_COLLISION_WIDTH, TEXTURE_COLLISION_HEIGHT))
-					{
-						g_Player[i].opos = g_Player[i].pos;
-						g_Player[i].pos = nextpos;
-					}
-	
-
-					if ((GetKeyboardTrigger(DIK_SPACE) || (IsButtonTriggered(0, BUTTON_X)) || (GetUIClicked() == UI_JUMP)))
-					{
-						g_Player[i].jumptimes--;
-
-						if ((g_Player[i].jumptimes > 0))
-						{
-							g_Player[i].state = PLAYER_STATE_JUMP;
-							SetJump(i);
-							PlaySound(SOUND_LABEL_SE_jump);
-							SetEffect3(g_Player[i].pos, JUMP);
+							g_Player[i].flashExeCnt = 0;
 						}
 					}
+					if (g_Player[i].flashExeCnt >= 2)
+					{
+						g_Player[i].flash = TRUE;
+						PlayerFlash(&nextpos, i);
+					}
+					else g_Player[i].flash = FALSE;
 
-					if (g_Player[i].jump && g_Player[i].jumptimes > 0)
+				}
+
+				//移動後フィールドとの当たり判定
+
+				if (!WaistFieldCollision(nextpos, TEXTURE_COLLISION_WIDTH, TEXTURE_COLLISION_HEIGHT))
+				{
+					g_Player[i].opos = g_Player[i].pos;
+					g_Player[i].pos = nextpos;
+				}
+
+
+				if ((GetKeyboardTrigger(DIK_SPACE) || (IsButtonTriggered(0, BUTTON_X)) || (GetUIClicked() == UI_JUMP)))
+				{
+					g_Player[i].jumptimes--;
+
+					if ((g_Player[i].jumptimes > 0))
 					{
-						PlayerJump(i);
-					}
-					if (!g_Player[i].onGround && !g_Player[i].jump)
-					{
-						g_Player[i].state = PLAYER_STATE_FALL;
-					}
-					if (g_Player[i].onGround)
-					{
-						g_Player[i].jumptimes = PLAYER_JUMP_TIMES_MAX;
+						g_Player[i].state = PLAYER_STATE_JUMP;
+						SetJump(i);
+						PlaySound(SOUND_LABEL_SE_jump);
+						SetEffect3(g_Player[i].pos, JUMP);
 					}
 				}
-				////重力処理
-				PlayerGravity(i);
+
+				if (g_Player[i].jump && g_Player[i].jumptimes > 0)
 				{
-					{// MAP外チェック
-						if (g_Player[i].pos.x < 0.0f)	g_Player[i].pos.x = 0.0f;
-						if (g_Player[i].pos.x > bg->w)	g_Player[i].pos.x = bg->w;
-						if (g_Player[i].pos.y < 0.0f)	g_Player[i].pos.y = 0.0f;
-						if (g_Player[i].pos.y > bg->h)	g_Player[i].pos.y = bg->h;
-					}
+					PlayerJump(i);
+				}
+				if (!g_Player[i].onGround && !g_Player[i].jump)
+				{
+					g_Player[i].state = PLAYER_STATE_FALL;
+				}
+				if (g_Player[i].onGround)
+				{
+					g_Player[i].jumptimes = PLAYER_JUMP_TIMES_MAX;
+				}
+			}
+			////重力処理
+			PlayerGravity(i);
+			{
+				{// MAP外チェック
+					if (g_Player[i].pos.x < 0.0f)	g_Player[i].pos.x = 0.0f;
+					if (g_Player[i].pos.x > bg->w)	g_Player[i].pos.x = bg->w;
+					if (g_Player[i].pos.y < 0.0f)	g_Player[i].pos.y = 0.0f;
+					if (g_Player[i].pos.y > bg->h)	g_Player[i].pos.y = bg->h;
+				}
 
-					if (GetMode() != MODE_BOSS)
-					{// プレイヤーの立ち位置からMAPのスクロール座標を計算する
-						bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
-						if (bg->pos.x < 0) bg->pos.x = 0;
-						if (bg->pos.x > bg->w - SCREEN_WIDTH) bg->pos.x = bg->w - SCREEN_WIDTH;
+				if (GetMode() != MODE_BOSS)
+				{// プレイヤーの立ち位置からMAPのスクロール座標を計算する
+					bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
+					if (bg->pos.x < 0) bg->pos.x = 0;
+					if (bg->pos.x > bg->w - SCREEN_WIDTH) bg->pos.x = bg->w - SCREEN_WIDTH;
 
-						bg->pos.y = g_Player[i].pos.y - PLAYER_DISP_Y;
-						if (bg->pos.y < 0) bg->pos.y = 0;
-						if (bg->pos.y > bg->h - SCREEN_HEIGHT) bg->pos.y = bg->h - SCREEN_HEIGHT;
+					bg->pos.y = g_Player[i].pos.y - PLAYER_DISP_Y;
+					if (bg->pos.y < 0) bg->pos.y = 0;
+					if (bg->pos.y > bg->h - SCREEN_HEIGHT) bg->pos.y = bg->h - SCREEN_HEIGHT;
 
+				}
+			}
+
+			/////////////////////////////////////////////////////////////
+
+			if (g_Player[i].state != PLAYER_STATE_BLADE &&
+				g_Player[i].state != PLAYER_STATE_BLACKHOLE &&
+				g_Player[i].state != PLAYER_STATE_BULLET &&
+				g_Player[i].state != PLAYER_STATE_ULT)
+			{
+				g_Changable = TRUE;
+			}
+
+			//スキル処理
+			if (g_Changable)
+			{
+				//ガード
+				if (((GetKeyboardPress(DIK_H)) && (g_Player[i].state == PLAYER_STATE_STAND)) ||
+					(IsButtonPressed(0, BUTTON_L) && (g_Player[i].state == PLAYER_STATE_STAND)) ||
+					((GetUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_STAND)))
+				{
+					if (g_Player[i].onGround == TRUE)
+					{
+						{
+							g_Player[i].state = PLAYER_STATE_GUARD;
+							g_Changable = FALSE;
+
+							g_SkillFrameCnt = 0;
+
+						}
 					}
 				}
-				
-				/////////////////////////////////////////////////////////////
-				
-				if (g_Player[i].state != PLAYER_STATE_BLADE &&
-					g_Player[i].state != PLAYER_STATE_BLACKHOLE &&
-					g_Player[i].state != PLAYER_STATE_BULLET &&
-					g_Player[i].state != PLAYER_STATE_ULT)
+
+				if (((GetKeyboardRelease(DIK_H)) && (g_Player[i].state == PLAYER_STATE_GUARD)) ||
+					((GetKeyboardRelease(DIK_H)) && !IsButtonPressed(0, BUTTON_L) && (g_Player[i].state == PLAYER_STATE_GUARD)) ||
+					(((GetUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_GUARD))))
+
 				{
+					g_Player[i].state = PLAYER_STATE_STAND;
 					g_Changable = TRUE;
+
+					ResetEffect3(GUARD);
 				}
 
-				//スキル処理
-				if (g_Changable)
+				//ブレイド
+				if ((GetKeyboardTrigger(DIK_J)) || IsButtonTriggered(0, BUTTON_B) || GetUIClicked() == UI_BLADE)
 				{
-					//ガード
-					if (	( (GetKeyboardPress(DIK_H)) && (g_Player[i].state == PLAYER_STATE_STAND)	)	||
-						(IsButtonPressed(0, BUTTON_L) && (g_Player[i].state == PLAYER_STATE_STAND)	)	||
-						( (GetUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_STAND))	)
+					g_Player[i].state = PLAYER_STATE_BLADE;
+					g_SkillFrameCnt = 0;
+				}
+				//バレット
+				if (GetKeyboardPress(DIK_K) || IsButtonPressed(0, BUTTON_Y) || GetUIClicked() == UI_BULLET)
+				{
+					g_BulletDelay--;
+					if (g_BulletDelay < 0)
 					{
-						if (g_Player[i].onGround == TRUE)
+						g_BulletDelay = BULLET_DELAY_CNT;
+						if (g_Player[i].mp >= BULLET_COST_MP)
 						{
-							{
-								g_Player[i].state = PLAYER_STATE_GUARD;
-								g_Changable = FALSE;
+							g_Player[i].mp -= BULLET_COST_MP;
 
-								g_SkillFrameCnt = 0;
-
-							}
-						}	
+							g_Player[i].state = PLAYER_STATE_BULLET;
+							g_SkillFrameCnt = 0;
+						}
+						else
+						{
+							PlaySound(SOUND_LABEL_SE_mp);
+						}
 					}
 
-					if (( (GetKeyboardRelease(DIK_H)) && (g_Player[i].state == PLAYER_STATE_GUARD)	)	||
-						( (GetKeyboardRelease(DIK_H)) &&!IsButtonPressed(0, BUTTON_L) &&  (g_Player[i].state == PLAYER_STATE_GUARD)	)	||
-						(((GetUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_GUARD))	))
-	
+				}
+				//重力弾
+				if (GetKeyboardTrigger(DIK_L) || IsButtonTriggered(0, BUTTON_R) || GetUIClicked() == UI_BLACKHOLE)
+				{
+					if (g_Player[i].mp >= BLACKHOLE_COST_MP)
 					{
-						g_Player[i].state = PLAYER_STATE_STAND;
-						g_Changable = TRUE;
+						g_Player[i].mp -= BLACKHOLE_COST_MP;
 
-						ResetEffect3(GUARD);
+						g_Player[i].state = PLAYER_STATE_BLACKHOLE;
+
+						g_SkillFrameCnt = 0;
+
 					}
-
-					//ブレイド
-					if ((GetKeyboardTrigger(DIK_J)) || IsButtonTriggered(0, BUTTON_B) || GetUIClicked() == UI_BLADE)
+					else
 					{
-						g_Player[i].state = PLAYER_STATE_BLADE;
+						PlaySound(SOUND_LABEL_SE_mp);
+					}
+				}
+				//ウルトラ
+				if (GetKeyboardTrigger(DIK_U) || IsButtonTriggered(0, BUTTON_R2) || GetUIClicked() == UI_ULT)
+				{
+					if (g_Player[i].mp >= PLAYER_MP_MAX)
+					{
+						g_Player[i].mp -= ULT_COST_MP;
+						g_Player[i].state = PLAYER_STATE_ULT;
 						g_SkillFrameCnt = 0;
 					}
-					//バレット
-					if (GetKeyboardPress(DIK_K) || IsButtonPressed(0, BUTTON_Y) || GetUIClicked() == UI_BULLET)
+					else
 					{
-						g_BulletDelay--;
-						if (g_BulletDelay < 0)
-						{
-							g_BulletDelay = BULLET_DELAY_CNT;
-							if (g_Player[i].mp >= BULLET_COST_MP)
-							{
-								g_Player[i].mp -= BULLET_COST_MP;
-
-								g_Player[i].state = PLAYER_STATE_BULLET;
-								g_SkillFrameCnt = 0;
-							}
-							else
-							{
-								PlaySound(SOUND_LABEL_SE_mp);
-							}
-						}
-						
+						PlaySound(SOUND_LABEL_SE_mp);
 					}
-					//重力弾
-					if (GetKeyboardTrigger(DIK_L) || IsButtonTriggered(0, BUTTON_R) || GetUIClicked() == UI_BLACKHOLE)
-					{
-						if (g_Player[i].mp >= BLACKHOLE_COST_MP)
-						{
-							g_Player[i].mp -= BLACKHOLE_COST_MP;
-
-							g_Player[i].state = PLAYER_STATE_BLACKHOLE;
-
-							g_SkillFrameCnt = 0;
-							
-						}
-						else
-						{
-							PlaySound(SOUND_LABEL_SE_mp);
-						}
-					}
-					//ウルトラ
-					if (GetKeyboardTrigger(DIK_U) || IsButtonTriggered(0, BUTTON_R2) || GetUIClicked() == UI_ULT)
-					{
-						if (g_Player[i].mp >= PLAYER_MP_MAX)
-						{
-							g_Player[i].mp -= ULT_COST_MP;
-							g_Player[i].state = PLAYER_STATE_ULT;
-							g_SkillFrameCnt = 0;
-						}
-						else
-						{
-							PlaySound(SOUND_LABEL_SE_mp);
-						}
-					}
-
-
-				}
-				
-				float w = 0;
-				switch (g_Player[i].state)
-				{
-				case PLAYER_STATE_BLADE:
-
-					PlayerAttackProcess(i);
-					break;
-
-				case PLAYER_STATE_GUARD:
-
-					Guard(i);
-					
-
-					break;
-
-				case PLAYER_STATE_BLACKHOLE:
-
-					BlackholeTimer(i);
-		
-					break;
-				case PLAYER_STATE_BULLET:
-					BulletTimer(i);
-					break;		
-				case PLAYER_STATE_ULT:
-					UltTimer(i);
-					break;
-	
 				}
 
-				//チュートリアルマップ外に出たら
-				if (g_Player[i].pos.y > SCREEN_HEIGHT - 100 && GetMode()== MODE_TUTORIAL)
-				{
-					g_Player[i].pos.y = 0.0f;
-					//PlayerReturn(i);
-					//g_Player[i].pos = g_Player[i].opos;
-				}
+
 			}
 
-			if (g_Player[i].hit)
+			float w = 0;
+			switch (g_Player[i].state)
 			{
-				SetVolumeSound(SOUND_LABEL_SE_hitplayer,0.2f);
-				PlaySound(SOUND_LABEL_SE_hitplayer);
-				g_Player[i].hitting = TRUE;
-				g_Player[i].hit = FALSE;
+			case PLAYER_STATE_BLADE:
+
+				PlayerAttackProcess(i);
+				break;
+
+			case PLAYER_STATE_GUARD:
+
+				Guard(i);
+
+
+				break;
+
+			case PLAYER_STATE_BLACKHOLE:
+
+				BlackholeTimer(i);
+
+				break;
+			case PLAYER_STATE_BULLET:
+				BulletTimer(i);
+				break;
+			case PLAYER_STATE_ULT:
+				UltTimer(i);
+				break;
+
 			}
-			if (g_Player[i].hitting)
+
+			//チュートリアルマップ外に出たら
+			if (g_Player[i].pos.y > SCREEN_HEIGHT - 100 && GetMode() == MODE_TUTORIAL)
 			{
-				PHitbackProcess(i);
+				g_Player[i].pos.y = 0.0f;
+				//PlayerReturn(i);
+				//g_Player[i].pos = g_Player[i].opos;
 			}
+		}
+
+		if (g_Player[i].hit)
+		{
+			SetVolumeSound(SOUND_LABEL_SE_hitplayer, 0.2f);
+			PlaySound(SOUND_LABEL_SE_hitplayer);
+			g_Player[i].hitting = TRUE;
+			g_Player[i].hit = FALSE;
+		}
+		if (g_Player[i].hitting)
+		{
+			PHitbackProcess(i);
+		}
 
 
-			if (GetMode() == MODE_BOSS)
-			{// 移動が終わったらエネミーとの当たり判定
+		if (GetMode() == MODE_BOSS)
+		{// 移動が終わったらエネミーとの当たり判定
 
-				ENEMY* boss = GetBoss();
-				for (int j = 0; j < BOSS_MAX; j++)
+			ENEMY* boss = GetBoss();
+			for (int j = 0; j < BOSS_MAX; j++)
+			{
+				if (boss[j].use == FALSE)continue;
+				int ans = CollisionBB(g_Player[i].pos, g_Player[i].w / 2, g_Player[i].h,
+					boss[j].pos, boss[j].w, boss[j].h * 0.8);
+
+				if (ans == TRUE)
 				{
-					if (boss[j].use == FALSE)continue;
-					int ans = CollisionBB(g_Player[i].pos, g_Player[i].w / 2, g_Player[i].h,
-						boss[j].pos, boss[j].w , boss[j].h * 0.8);
-
-					if (ans == TRUE)
-					{
-						g_Player[i].hit = TRUE;
-						AddPlayerHP(i,-15);
-					}
+					g_Player[i].hit = TRUE;
+					AddPlayerHP(i, -15);
 				}
 			}
+		}
 
-			
+
 
 
 		{//移動した？
@@ -737,11 +737,11 @@ void UpdatePlayer(void)
 			temp = XMVector3LengthSq(temp);
 			float dis;
 			XMStoreFloat(&dis, temp);
-			if (dis == 0 && 
-				g_Player[i].state != PLAYER_STATE_BLADE && 
-				g_Player[i].state != PLAYER_STATE_BLACKHOLE && 
+			if (dis == 0 &&
+				g_Player[i].state != PLAYER_STATE_BLADE &&
+				g_Player[i].state != PLAYER_STATE_BLACKHOLE &&
 				g_Player[i].state != PLAYER_STATE_BULLET &&
-				g_Player[i].state != PLAYER_STATE_ULT&&
+				g_Player[i].state != PLAYER_STATE_ULT &&
 				g_Player[i].state != PLAYER_STATE_GUARD)
 			{//移動していないなら
 				g_Player[i].state = PLAYER_STATE_STAND;
@@ -810,13 +810,13 @@ void DrawPlayer(void)
 				float pw = g_Player[i].w;		// プレイヤーの表示幅
 				float ph = g_Player[i].h;		// プレイヤーの表示高さ
 
-				if (g_Player[i].state == PLAYER_STATE_BLADE )
+				if (g_Player[i].state == PLAYER_STATE_BLADE)
 				{
 					pw = 160.0f;		// プレイヤーの表示幅
-					ph = 160.0f; 
+					ph = 160.0f;
 					py -= 30.0f;
 				}
-				
+
 
 				//py += g_Player[i].jumpY;		// ジャンプ中の高さを足す
 				// アニメーション用
@@ -852,7 +852,7 @@ void DrawPlayer(void)
 				// ポリゴン描画
 				GetDeviceContext()->Draw(4, 0);
 			}
-			
+
 			//攻撃表示
 			//DrawAttackEffect();
 
@@ -895,7 +895,7 @@ void DrawPlayer(void)
 				}
 
 				SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-					XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f/g_deadCnt),
+					XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f / g_deadCnt),
 					g_Player[i].rot.z);
 
 				// ポリゴン描画
@@ -931,7 +931,7 @@ void SetJump(int num)
 		{//ジャンプの初期化処理
 			g_Player[num].state = PLAYER_STATE_JUMP;
 			g_gravityCnt = 0.0f;
-			if(GetMode() == MODE_BOSS)	g_Player[num].jumpplus = (-1) * (PLAYER_JUMP_Y_MAX + 5.0f);
+			if (GetMode() == MODE_BOSS)	g_Player[num].jumpplus = (-1) * (PLAYER_JUMP_Y_MAX + 5.0f);
 			else						g_Player[num].jumpplus = (-1) * (PLAYER_JUMP_Y_MAX);
 
 		}
@@ -995,14 +995,11 @@ void PlayerFlash(XMFLOAT3* nextpos, int num)
 	{
 		float speed = g_Player[num].move.x * 2;
 
-		if(g_Player[num].dir == CHAR_DIR_LEFT)
+		if (g_Player[num].dir == CHAR_DIR_LEFT)
 			nextpos->x -= speed;
 		else
 			nextpos->x += speed;
-		//g_Player[num].pos.x += speed;
-
 	}
-	
 	return;
 }
 //足場判断処理
@@ -1046,7 +1043,7 @@ void PlayerGravity(int num)
 
 		if (GetMode() == MODE_BOSS)
 		{
-			pfootpos = XMFLOAT3(g_Player[num].pos.x, g_Player[num].pos.y + g_Player[num].h / 2 , 0.0f);//足元の座標]
+			pfootpos = XMFLOAT3(g_Player[num].pos.x, g_Player[num].pos.y + g_Player[num].h / 2, 0.0f);//足元の座標]
 			ans = FieldCollision(pfootpos, g_Player[num].w / 4, g_Player[num].h / 4);
 			if (ans)//足場がある
 			{
@@ -1104,10 +1101,10 @@ void PlayerGravity(int num)
 
 		}
 
-		
+
 
 	}
-		
+
 }
 //=============================================================================
 //攻撃表示
@@ -1186,7 +1183,7 @@ void PlayerAttackProcess(int num)
 		}
 
 		float attackx = 0.0f;
-		if (g_Player[num].dir == CHAR_DIR_RIGHT)		attackx = (g_Player[num].w / 2);	
+		if (g_Player[num].dir == CHAR_DIR_RIGHT)		attackx = (g_Player[num].w / 2);
 		else if (g_Player[num].dir == CHAR_DIR_LEFT)	attackx = (-1) * (g_Player[num].w / 2);
 
 
@@ -1209,33 +1206,33 @@ void PlayerAttackProcess(int num)
 		case MODE_GAME:
 
 			//攻撃処理時の当たり判定
-			{					
-				ENEMY* enemy = GetEnemy();
-				for (int j = 0; j < ENEMY_MAX; j++)
+		{
+			ENEMY* enemy = GetEnemy();
+			for (int j = 0; j < ENEMY_MAX; j++)
+			{
+				if (enemy[j].use == FALSE)continue;
+				int ans = CollisionBB(blade_pos, PLAYER_ATTACK_EFFECT_WIDTH + 30.0f, PLAYER_ATTACK_EFFECT_HEIGHT + 30.0f, enemy[j].pos, enemy[j].w, enemy[j].h);
+
+				if (ans == TRUE)
 				{
-					if (enemy[j].use == FALSE)continue;
-					int ans = CollisionBB(blade_pos, PLAYER_ATTACK_EFFECT_WIDTH + 30.0f, PLAYER_ATTACK_EFFECT_HEIGHT + 30.0f, enemy[j].pos, enemy[j].w, enemy[j].h);
 
-					if (ans == TRUE)
+
+
+					if (g_Player[num].time == waitMax)
 					{
-
-						
-
-						if (g_Player[num].time == waitMax)
-						{
-							SetEffect3(g_Player[num].pos, HIT);
-							AddPlayerMP(num, 4.0f);
-							//SetEffect3(g_Player[num].pos, MPUP);
-						}
-
-						enemy[j].hit = TRUE;
-						SetEDamagedType(j, DAMAGED_BLADE);
+						SetEffect3(g_Player[num].pos, HIT);
+						AddPlayerMP(num, 4.0f);
+						//SetEffect3(g_Player[num].pos, MPUP);
 					}
+
+					enemy[j].hit = TRUE;
+					SetEDamagedType(j, DAMAGED_BLADE);
 				}
 			}
-				
+		}
 
-			break;
+
+		break;
 		case MODE_BOSS:
 
 			if (g_Player[num].time == 1)
@@ -1342,7 +1339,7 @@ void DrawPlayerOffset(int no)
 		GetDeviceContext()->Draw(4, 0);
 	}
 
-	
+
 }
 
 // 影表示
@@ -1381,7 +1378,7 @@ void DrawPlayerShadow(void)
 			SetBlendState(BLEND_MODE_ALPHABLEND);	// 半透明処理を元に戻す
 		}
 
-		
+
 	}
 }
 
@@ -1469,7 +1466,7 @@ void DrawPlayerMP(int num)
 		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
 
 		//ゲージの位置やテクスチャー座標を反映
-		float temp  = ((float)g_Player[num].mp / PLAYER_MP_MAX);
+		float temp = ((float)g_Player[num].mp / PLAYER_MP_MAX);
 		pw = pw * temp;
 		if (pw >= GAUGE_WIDTH)
 		{
@@ -1534,7 +1531,7 @@ void PHitbackProcess(int num)
 	{
 		if (g_Player[num].use == TRUE)
 		{
-			if(g_Player[num].hitting)
+			if (g_Player[num].hitting)
 			{//○○に当てられた処理
 				if (g_Player[num].hitCnt > HIT_FRAME_MAX)
 				{	//時間オーバー
@@ -1554,7 +1551,7 @@ void PHitbackProcess(int num)
 					{
 						g_Player[num].clearCnt = 0;
 						g_Player[num].clear = !(g_Player[num].clear);
-					}				
+					}
 				}
 			}
 		}
@@ -1563,7 +1560,7 @@ void PHitbackProcess(int num)
 }
 
 //プレイヤーのHPを引く数の値を引く
-void AddPlayerHP(int num,float hp)
+void AddPlayerHP(int num, float hp)
 {
 
 	if (g_Player[num].use == FALSE)return;
@@ -1642,11 +1639,11 @@ void BlackholeTimer(int num)
 		}
 		else x += g_Player[num].w;
 
-		SetBullet(XMFLOAT3(x, g_Player[num].pos.y,0.0f), BLACKHOLE);
+		SetBullet(XMFLOAT3(x, g_Player[num].pos.y, 0.0f), BLACKHOLE);
 		g_BlackholeFCnt = 0;
 		g_Changable = TRUE;
 		g_Player[num].state = PLAYER_STATE_STAND;
-		
+
 	}
 	else
 	{
@@ -1709,7 +1706,7 @@ void UltTimer(int num)
 		if (g_SkillFrameCnt == 1)
 		{
 			PlaySound(SOUND_LABEL_SE_ultstart);
-			SetEffect3(u1pos,ULT1);
+			SetEffect3(u1pos, ULT1);
 		}
 		else if (g_SkillFrameCnt == ULT_CHANT_FRAMEMAX + 30)
 		{
@@ -1731,25 +1728,25 @@ void UltTimer(int num)
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
 					if (enemy[i].use == FALSE)continue;
-					
-					if ( ( enemy[i].pos.x >= (player[0].pos.x - SCREEN_CENTER_X) )&&
+
+					if ((enemy[i].pos.x >= (player[0].pos.x - SCREEN_CENTER_X)) &&
 						(enemy[i].pos.x <= (player[0].pos.x + SCREEN_CENTER_X)) &&
-						(enemy[i].pos.y >= (player[0].pos.y - SCREEN_CENTER_Y))&&
+						(enemy[i].pos.y >= (player[0].pos.y - SCREEN_CENTER_Y)) &&
 						(enemy[i].pos.y <= (player[0].pos.y + 100))
 						)
 					{
 						enemy[i].hit = TRUE;
-						SetEDamagedType(i,DAMAGED_ULT);
+						SetEDamagedType(i, DAMAGED_ULT);
 					}
 				}
 			}
 
 
 			SetEffect3(u1pos, ULT2);
-			
+
 		}
 
-		if (g_SkillFrameCnt % 40== 0 && g_SkillFrameCnt > ULT_CHANT_FRAMEMAX + 30)
+		if (g_SkillFrameCnt % 40 == 0 && g_SkillFrameCnt > ULT_CHANT_FRAMEMAX + 30)
 		{
 			PlaySound(SOUND_LABEL_SE_ulthit);
 		}
@@ -1785,7 +1782,7 @@ void Guard(int num)
 	{
 		g_GuardFrameCnt = 0;
 	}
-	
+
 }
 
 
@@ -1842,7 +1839,7 @@ void  DrawPlayerIcon(void)
 		G = 0.0f, B = 0.0f, Alpha = 0.7f;
 
 		tx += 10 * sin(g_PlayerIcon.theta);
-	/*	ty += 5 * cos(g_PlayerIcon.theta);*/
+		/*	ty += 5 * cos(g_PlayerIcon.theta);*/
 		tw = g_PlayerIcon.w * (1 + 0.025 * sin(g_PlayerIcon.theta));
 		th = g_PlayerIcon.h * (1 + 0.025 * sin(
 			g_PlayerIcon.theta));
@@ -1853,5 +1850,5 @@ void  DrawPlayerIcon(void)
 	//// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
 
-	
+
 }
