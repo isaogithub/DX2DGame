@@ -410,7 +410,7 @@ void UpdateTutorial(void)
 					SetPause(FALSE);
 					heroine->use = FALSE;
 					g_MessageNum = -1;
-					SetResult(GAMECLEAR,BOSS);
+					SetResult(GAMECLEAR,MODE_BOSS);
 					SetFade(FADE_OUT, MODE_RESULT);
 				}
 				break;

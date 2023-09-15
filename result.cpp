@@ -124,7 +124,7 @@ void UpdateResult(void)
 
 		switch (GetResultMODE())
 		{
-		case GAME:
+		case MODE_GAME:
 
 			if (GetKeyboardTrigger(DIK_RETURN))
 			{// Enter押したら、ステージを切り替える
@@ -142,7 +142,7 @@ void UpdateResult(void)
 
 
 			break;
-		case BOSS:
+		case MODE_BOSS:
 
 			if (GetKeyboardTrigger(DIK_RETURN))
 			{// Enter押したら、ステージを切り替える

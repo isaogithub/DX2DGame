@@ -297,7 +297,7 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_beforetime = timeGetTime();
 	g_deltatime = 0;
 	g_result = GAMEOVER;
-	g_ResultMode = GAME;	// •`‰æ‚Ì‰Šú‰»
+	g_ResultMode = MODE_GAME;	// •`‰æ‚Ì‰Šú‰»
 
 	InitRenderer(hInstance, hWnd, bWindow);
 

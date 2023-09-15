@@ -24,11 +24,12 @@
 enum ENEMY_TYPE
 {
 	ENEMY_TYPE_SLIME,
+	ENEMY_TYPE_MANDRAKE,
 	ENEMY_TYPE_BOSS,
 	ENEMY_TYPE_MAX,
 };
 
-enum ENEMY_SLIME_STATE
+enum ENEMY_STATE
 {
 	SLIME_STATE_IDLE,
 	SLIME_STATE_WALK,
@@ -38,7 +39,7 @@ enum ENEMY_SLIME_STATE
 	SLIME_STATE_MAX,
 };
 
-enum ENEMY_BOSS_STATE
+enum BOSS_STATE
 {
 	BOSS_STATE_IDLE,
 	BOSS_STATE_WALK,
@@ -52,9 +53,9 @@ enum ENEMY_BOSS_STATE
 	BOSS_STATE_MAX,
 };
 
-enum ENEMY_SKILL
+enum BOSS_SKILL
 {
-	ENEMY_SKILL001,
+	BOSS_SKILL001,
 	ENEMY_SKILL002,
 	ENEMY_SKILL003,
 	ENEMY_SKILL004,
@@ -85,8 +86,64 @@ struct ENEMY
 	int			type;			//エネミーのタイプ
 	int			state;
 	int			ostate;
+
 	XMFLOAT3	pos;			// ポリゴンの座標
-	XMFLOAT3	opos;			
+	XMFLOAT3	opos;
+	XMFLOAT3	nextpos;		//次に行くところ
+
+	XMFLOAT3	rot;			// ポリゴンの回転量
+	XMFLOAT3	scl;			// ポリゴンの拡大縮小
+
+
+	int			hp;				// エネミーのHP
+	int			damagedType;	//遭ったダメージは何の技？
+
+	float		needmovedis;		//エネミーが移動必要な距離
+	float		movedis;			//停止状態からどれくらい移動したか
+	float		knockmoveX;		//ノックアウトの毎フレイム移動
+
+	BOOL		stop;
+	float		stopframe;
+
+	float		walktimer;
+	int			hitCnt;			// 当たり判定カウンタ
+	BOOL		hit;			// 当てられた
+	BOOL		hitting;		// 当てられた途中
+	BOOL		clear;			// 透明フラグ
+
+	BOOL		attack;			//攻撃フラグ
+
+	BOOL		skill01;
+	BOOL		skill01Cnt;
+	BOOL		skill01delaytime;
+
+	BOOL		skill02;
+
+
+	int			attacktime;		//攻撃時間カウンター
+	BOOL		onGround;		// エネミーが
+	float		gravityCnt;
+	int			str;			// 攻撃力
+	BOOL		dir;			//エネミー方向
+	XMFLOAT3	move;			// 移動速度
+	XMFLOAT3	amove;			// プレイヤーを見つけた速度
+};
+
+
+struct BOSS
+{
+	BOOL		use;			// true:使っている  false:未使用
+	BOOL		display;
+	float		w, h;			// 幅と高さ
+	float		countAnim;		// アニメーションカウント
+	int			patternAnim;	// アニメーションパターンナンバー
+	int			texNo;			// テクスチャ番号
+
+	int			type;			//エネミーのタイプ
+	int			state;
+	int			ostate;
+	XMFLOAT3	pos;			// ポリゴンの座標
+	XMFLOAT3	opos;
 	XMFLOAT3	nextpos;		//次に行くところ
 
 	XMFLOAT3	rot;			// ポリゴンの回転量
@@ -102,7 +159,7 @@ struct ENEMY
 
 	BOOL		stop;
 	float		stopframe;
-	
+
 	//XMFLOAT3	knockmoveY;		//ノックアウトの毎フレイム移動
 	float		walktimer;
 
@@ -134,11 +191,10 @@ struct ENEMY
 	float		time;			// 線形補間用
 	int			tblNo;			// 行動データのテーブル番号
 	int			tblMax;			// そのテーブルのデータ数
-
-	//INTERPOLATION_DATA* tbl_adr;			// アニメデータのテーブル先頭アドレス
-	//int				tbl_size;			// 登録したテーブルのレコード総数
-	//float				move_time;			// 実行時間
 };
+
+
+
 
 
 //*****************************************************************************
@@ -222,7 +278,7 @@ void Skill005(int num);
 
 
 BOOL isBossDead(void);
-ENEMY* GetBoss(void);
+BOSS* GetBoss(void);
 void SetBDamagedType(int type);
 void DrawBossHP(int num);
 void Down(void);

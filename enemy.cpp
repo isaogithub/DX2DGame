@@ -130,7 +130,7 @@
 static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static ID3D11ShaderResourceView *g_Texture_Slime[TEXTURE_SLIME_MAX] = { NULL };	// スライムテクスチャ情報
+static ID3D11ShaderResourceView *g_Texture_Enemy[TEXTURE_SLIME_MAX] = { NULL };	// スライムテクスチャ情報
 static ID3D11ShaderResourceView* g_Texture_Boss[BOSS_STATE_MAX] = { NULL };	// スライムテクスチャ情報
 
 static char *g_TextureName[TEXTURE_MAX] = {
@@ -144,7 +144,7 @@ static char *g_TextureName[TEXTURE_MAX] = {
 };
 
 //Slimeのテクスチャ設定
-static char* g_TextureName_Slime[] = {
+static char* g_TextureName_Enemy[] = {
 	"data/CHARA/enemy_slime_stand.png",
 	"data/CHARA/enemy_slime_walk.png",
 	"data/CHARA/enemy_slime_attack.png"
@@ -188,7 +188,7 @@ static	int g_boss_state_AnimeMax[BOSS_STATE_MAX][4] = { //各テクスチャの分割数
 static BOOL		 g_Load = FALSE;			// 初期化を行ったかのフラグ
 	
 static ENEMY	g_Enemy[ENEMY_MAX];		// エネミー構造体
-static ENEMY	g_Boss[BOSS_MAX];
+static BOSS		g_Boss[BOSS_MAX];
 
 static SKILL	g_Skill002[SKILL2_MAX];
 static SKILL3	g_Skill003[SKILL3_MAX];
@@ -387,12 +387,12 @@ HRESULT InitEnemy(void)
 
 		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
 		{
-			g_Texture_Slime[i] = NULL;
+			g_Texture_Enemy[i] = NULL;
 			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName_Slime[i],
+				g_TextureName_Enemy[i],
 				NULL,
 				NULL,
-				&g_Texture_Slime[i],
+				&g_Texture_Enemy[i],
 				NULL);
 		}
 
@@ -438,12 +438,6 @@ HRESULT InitEnemy(void)
 			g_Enemy[i].stop = TRUE;							//停止状態になってる？YES
 			g_Enemy[i].stopframe = 60.0f;					//停止状態続いている時間
 
-
-			//線形補間用
-			g_Enemy[i].time = 0.0f;		// 線形補間用のタイマーをクリア
-			g_Enemy[i].tblNo = 0;		// 再生する行動データテーブルNoをセット
-			g_Enemy[i].tblMax = 0;		// 再生する行動データテーブルのレコード数をセット
-
 			g_EnemyCnt++;
 		}
 
@@ -474,12 +468,12 @@ HRESULT InitEnemy(void)
 
 		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
 		{
-			g_Texture_Slime[i] = NULL;
+			g_Texture_Enemy[i] = NULL;
 			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName_Slime[i],
+				g_TextureName_Enemy[i],
 				NULL,
 				NULL,
-				&g_Texture_Slime[i],
+				&g_Texture_Enemy[i],
 				NULL);
 		}
 
@@ -529,13 +523,6 @@ HRESULT InitEnemy(void)
 
 			g_Enemy[i].stop = TRUE;
 			g_Enemy[i].stopframe = 60.0f;
-
-			//g_Enemy[i].knockmoveY = g_Enemy[i].move;
-
-
-			g_Enemy[i].time = 0.0f;		// 線形補間用のタイマーをクリア
-			g_Enemy[i].tblNo = 0;		// 再生する行動データテーブルNoをセット
-			g_Enemy[i].tblMax = 0;		// 再生する行動データテーブルのレコード数をセット
 
 			g_EnemyCnt++;
 		}
@@ -659,10 +646,10 @@ void UninitEnemy(void)
 	case MODE_TUTORIAL:
 		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
 		{
-			if (g_Texture_Slime[i])
+			if (g_Texture_Enemy[i])
 			{
-				g_Texture_Slime[i]->Release();
-				g_Texture_Slime[i] = NULL;
+				g_Texture_Enemy[i]->Release();
+				g_Texture_Enemy[i] = NULL;
 			}
 		}
 		break;
@@ -670,10 +657,10 @@ void UninitEnemy(void)
 
 		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
 		{
-			if (g_Texture_Slime[i])
+			if (g_Texture_Enemy[i])
 			{
-				g_Texture_Slime[i]->Release();
-				g_Texture_Slime[i] = NULL;
+				g_Texture_Enemy[i]->Release();
+				g_Texture_Enemy[i] = NULL;
 			}
 		}
 		break;
@@ -781,7 +768,7 @@ void DrawEnemy(void)
 				float G = 1.0f;
 				float B = 1.0f;
 
-				GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Slime[g_Enemy[i].state]);
+				GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Enemy[g_Enemy[i].state]);
 
 				//エネミーの位置やテクスチャー座標を反映
 
@@ -850,7 +837,7 @@ void DrawEnemy(void)
 					ph = TEXTURE_HEIGHT;		// エネミーの表示高さ;
 					animeMaxX = g_slime_state_AnimeMax[g_Enemy[i].state][2];
 					animeMaxY = g_slime_state_AnimeMax[g_Enemy[i].state][1];
-					GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Slime[g_Enemy[i].state]);
+					GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Enemy[g_Enemy[i].state]);
 					//エネミーの位置やテクスチャー座標を反映
 
 					// アニメーション用
@@ -2016,14 +2003,14 @@ void DrawEnemyHP(int num)
 
 void SetSkill000(int num)
 {
-	g_Enemy[num].time = 0.0f;
+	g_Boss[num].time = 0.0f;
 	g_Boss[num].tblNo = 0;
 	g_Boss[num].tblMax = sizeof(g_MoveTbl0) / sizeof(INTERPOLATION_DATA2);
 
 }
 void SetSkill005(int num)
 {
-	g_Enemy[num].time = 0.0f;
+	g_Boss[num].time = 0.0f;
 	g_Boss[num].tblNo = 1;
 	g_Boss[num].tblMax = sizeof(g_MoveTbl1) / sizeof(INTERPOLATION_DATA2);
 }
@@ -3107,7 +3094,7 @@ BOOL isBossDead(void)
 	return FALSE;
 }
 
-ENEMY *GetBoss(void)
+BOSS *GetBoss(void)
 {
 	return &g_Boss[0];
 }

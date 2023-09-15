@@ -383,13 +383,13 @@ void UpdatePlayer(void)
 				//if (g_Player[i].life > 0) SetFade(FADE_OUT, MODE_GAME);
 				if (GetMode() == MODE_GAME)
 				{
-					SetResult(GAMEOVER, GAME);
+					SetResult(GAMEOVER, MODE_GAME);
 					SetFade(FADE_OUT, MODE_RESULT);
 
 				}
 				else if (GetMode() == MODE_BOSS)
 				{
-					SetResult(GAMEOVER, BOSS);
+					SetResult(GAMEOVER, MODE_BOSS);
 					SetFade(FADE_OUT, MODE_RESULT);
 				}
 			}
@@ -714,7 +714,7 @@ void UpdatePlayer(void)
 		if (GetMode() == MODE_BOSS)
 		{// 移動が終わったらエネミーとの当たり判定
 
-			ENEMY* boss = GetBoss();
+			BOSS* boss = GetBoss();
 			for (int j = 0; j < BOSS_MAX; j++)
 			{
 				if (boss[j].use == FALSE)continue;
@@ -1240,7 +1240,7 @@ void PlayerAttackProcess(int num)
 				//攻撃処理時の当たり判定
 				{
 
-					ENEMY* boss = GetBoss();
+					BOSS* boss = GetBoss();
 					for (int j = 0; j < BOSS_MAX; j++)
 					{
 						if (boss[j].use == FALSE)continue;
@@ -1712,7 +1712,7 @@ void UltTimer(int num)
 		{
 			if (GetMode() == MODE_BOSS)
 			{
-				ENEMY* boss = GetBoss();
+				BOSS* boss = GetBoss();
 
 				for (int i = 0; i < BOSS_MAX; i++)
 				{

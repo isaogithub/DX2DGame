@@ -248,7 +248,7 @@ void UpdateBullet(void)
 			if (GetMode() == MODE_BOSS)
 			{//É{ÉXÇ…ìñÇΩÇ¡ÇΩÇÁè¡Ç¶ÇÈ
 
-				ENEMY* boss = GetBoss();
+				BOSS* boss = GetBoss();
 				for (int j = 0; j < BOSS_MAX; j++)
 				{
 					if (boss[j].use == FALSE)continue;
@@ -319,7 +319,7 @@ void UpdateBullet(void)
 			if (GetMode() == MODE_BOSS)
 			{
 
-				ENEMY* boss = GetBoss();
+				BOSS* boss = GetBoss();
 				for (int j = 0; j < BOSS_MAX; j++)
 				{
 					if (boss[j].use == FALSE)continue;
