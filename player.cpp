@@ -44,6 +44,8 @@
 #define	PLAYER_JUMP_ACC				(0.5f)
 #define PLAYER_JUMP_TIMES_MAX		(2)		//2回ジャンプできる
 
+#define PLAYER_FLASH_TIMES_MAX		(0.2f)
+
 //攻撃
 #define PLAYER_ATTACK_FRAME			(8)
 #define PLAYER_ATTACK_EFFECT_WIDTH	(120.0f)
@@ -248,10 +250,12 @@ HRESULT InitPlayer(void)
 		g_Player[i].jumptimes = 2;
 		g_Player[i].jumpplus  = 4.0f;
 		g_Player[i].move = XMFLOAT3(6.0f, 0.0f, 0.0f);		// 移動量
-
+		g_Player[i].flashCnt = 0;		// 移動量
+		g_Player[i].flashExeTimer = 0.0f;
+		g_Player[i].flashExeCnt = 0;
 		//ステートフラグ
 		g_Player[i].moving = FALSE;							// 移動中フラグ
-		g_Player[i].dash  = FALSE;							// 移動中フラグ
+		g_Player[i].flash  = FALSE;							// 移動中フラグ
 		g_Player[i].onGround = FALSE;
 		g_Player[i].attack   = FALSE;
 		g_Player[i].bullet   = FALSE;
@@ -433,8 +437,6 @@ void UpdatePlayer(void)
 				XMFLOAT3 nextpos = g_Player[i].pos;
 				float speed = g_Player[i].move.x;
 
-				g_Player[i].moving = FALSE;
-				g_Player[i].dash = FALSE;
 
 				if (g_Player[i].state != PLAYER_STATE_BLADE && 
 					g_Player[i].state != PLAYER_STATE_BULLET &&
@@ -450,23 +452,53 @@ void UpdatePlayer(void)
 					//	//else if (g_Player[i].dir == CHAR_DIR_LEFT)nextpos.x -= 20.0f;
 
 					//}
+
+
 					if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
 					{
+						
 						g_Player[i].state = PLAYER_STATE_WALK;
 						g_Player[i].dir = CHAR_DIR_RIGHT;
-						g_Player[i].moving = TRUE;
-
 						nextpos.x += speed;
 					}
 					else if (GetKeyboardPress(DIK_A) || IsButtonPressed(0, BUTTON_LEFT))
 					{
 						g_Player[i].state = PLAYER_STATE_WALK;
 						g_Player[i].dir = CHAR_DIR_LEFT;
-						g_Player[i].moving = TRUE;
 
 						nextpos.x -= speed;
 					}
 
+					
+					{//フラッシュ
+						if (((GetKeyboardTrigger(DIK_D) || IsButtonTriggered(0, BUTTON_RIGHT))||
+							 (GetKeyboardTrigger(DIK_A) || IsButtonTriggered(0, BUTTON_LEFT)))&&
+							g_Player[i].flash == FALSE)
+						{
+							g_Player[i].moving = TRUE;
+							g_Player[i].flashExeTimer = 0.0f;
+							g_Player[i].flashExeCnt++;
+						}
+						if (g_Player[i].moving == TRUE)
+						{
+							g_Player[i].flashExeTimer += GetDeltatime();
+
+							if (g_Player[i].flashExeTimer > PLAYER_FLASH_TIMES_MAX * 1000.0f)
+							{
+								g_Player[i].moving = FALSE;
+								g_Player[i].flashExeTimer = 0.0f;
+								g_Player[i].flashExeCnt = 0;
+							}
+						}
+						if (g_Player[i].flashExeCnt >= 2)
+						{
+							g_Player[i].flash = TRUE;
+							PlayerFlash(&nextpos,i);
+						}
+						else g_Player[i].flash = FALSE;
+
+					}
+					
 					//移動後フィールドとの当たり判定
 
 					if (!WaistFieldCollision(nextpos, TEXTURE_COLLISION_WIDTH, TEXTURE_COLLISION_HEIGHT))
@@ -764,7 +796,7 @@ void DrawPlayer(void)
 			DrawPlayerShadow();
 
 			// プレイヤーの分身を描画
-			if (g_Player[i].dash)
+			if (g_Player[i].flash)
 			{	// ダッシュ中だけ分身処理
 				DrawPlayerOffset(i);
 			}
@@ -956,6 +988,23 @@ void PlayerJump(int num)
 
 }
 
+void PlayerFlash(XMFLOAT3* nextpos, int num)
+{
+	if (g_Player[num].use == FALSE)return;
+	if (g_Player[num].flash)
+	{
+		float speed = g_Player[num].move.x * 2;
+
+		if(g_Player[num].dir == CHAR_DIR_LEFT)
+			nextpos->x -= speed;
+		else
+			nextpos->x += speed;
+		//g_Player[num].pos.x += speed;
+
+	}
+	
+	return;
+}
 //足場判断処理
 BOOL IsFootCol(int num)
 {
@@ -1795,7 +1844,8 @@ void  DrawPlayerIcon(void)
 		tx += 10 * sin(g_PlayerIcon.theta);
 	/*	ty += 5 * cos(g_PlayerIcon.theta);*/
 		tw = g_PlayerIcon.w * (1 + 0.025 * sin(g_PlayerIcon.theta));
-		th = g_PlayerIcon.h * (1 + 0.025 * sin(g_PlayerIcon.theta));
+		th = g_PlayerIcon.h * (1 + 0.025 * sin(
+			g_PlayerIcon.theta));
 	}
 	XMFLOAT4 color = XMFLOAT4(R, G, B, Alpha);
 

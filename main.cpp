@@ -146,20 +146,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	// ウィンドウモードかフルスクリーンモードかの処理
 	BOOL mode = TRUE;
 
-	//int id = MessageBox(NULL, "Windowモードでプレイしますか？", "起動モード", MB_YESNOCANCEL | MB_ICONQUESTION);
-	//switch (id)
-	//{
-	//case IDYES:		// YesならWindowモードで起動
-	//	mode = TRUE;
-	//	break;
-	//case IDNO:		// Noならフルスクリーンモードで起動
-	//	mode = FALSE;	// 環境によって動かない事がある
-	//	break;
-	//case IDCANCEL:	// CANCELなら終了
-	//default:
-	//	return -1;
-	//	break;
-	//}
+	int id = MessageBox(NULL, "Windowモードでプレイしますか？", "起動モード", MB_YESNOCANCEL | MB_ICONQUESTION);
+	switch (id)
+	{
+	case IDYES:		// YesならWindowモードで起動
+		mode = TRUE;
+		break;
+	case IDNO:		// Noならフルスクリーンモードで起動
+		mode = FALSE;	// 環境によって動かない事がある
+		break;
+	case IDCANCEL:	// CANCELなら終了
+	default:
+		return -1;
+		break;
+	}
 
 	// 初期化処理(ウィンドウを作成してから行う)
 	if(FAILED(Init(hInstance, hWnd, mode)))
@@ -230,9 +230,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				PLAYER* player = GetPlayer();
 				ENEMY* enemy = GetEnemy();
 				BG* bg = GetBG();
-				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "MX:%d MY:%d PX:%d PY:%d PonG:%d PS:%d  PJ:%d PAt:%d Pani:%d PHP:%d BLOCK:%d	ESTOP:%d EANI:%d Estate:%d EHIT:%d EHITG:%d EHCNT:%d EonG:%d EATT:%d",
+				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "MX:%d MY:%d PX:%d PY:%d PonG:%d PS:%d  PJ:%d PAt:%d Pani:%d PHP:%d PMING : %d  PFL : %d  PFEC : %d BLOCK:%d	ESTOP:%d EANI:%d Estate:%d EHIT:%d EHITG:%d EHCNT:%d EonG:%d EATT:%d",
 					GetMousePosX(), GetMousePosY(),
-					(int)player[0].pos.x, (int)player[0].pos.y, player[0].onGround,player[0].state,player[0].jump,player[0].attack,player[0].patternAnim,(int)player[0].hp,
+					(int)player[0].pos.x, (int)player[0].pos.y, player[0].onGround,player[0].state,player[0].jump,player[0].attack,player[0].patternAnim,(int)player[0].hp, (int)player[0].moving, (int)player[0].flash, player[0].flashExeCnt,
 					GetFieldData( (int)( GetMousePosY() / 32), (int)(GetMousePosX() / 32) ) ,
 					enemy[ENEMY_MAX - 1].stop, enemy[ENEMY_MAX - 1].patternAnim, enemy[ENEMY_MAX - 1].state, enemy[ENEMY_MAX - 1].hit,enemy[ENEMY_MAX - 1].hitting,enemy[ENEMY_MAX - 1].hitCnt,enemy[ENEMY_MAX - 1].onGround, enemy[ENEMY_MAX - 1].attack
 				) ;

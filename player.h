@@ -104,11 +104,18 @@ struct PLAYER
 
 	int			jumptimes;
 	float		jumpplus;		// ジャンプ加速度
+
+
+	int			flashExeCnt;
+	int			flashCnt;
+	float		flashExeTimer;
+	float		flashTimer;
+
 	XMFLOAT3	move;			// 移動速度
 
 	//ステートフラグ
 	BOOL		moving;			// 移動中フラグ
-	BOOL		dash;			// ダッシュ中フラグ
+	BOOL		flash;			// ダッシュ中フラグ
 	BOOL		onGround;		//プレイヤー今地面にいる
 	BOOL		attack;
 	BOOL		bullet;
@@ -126,23 +133,8 @@ struct PLAYER
 	XMFLOAT3	beforejumppos;	//ジャンプ前の座標を保存する
 	int			jumpCnt;		// ジャンプ中のカウント
 
-	//アタックカウンター
-	//int			bulletTime;
 
-	//ベジェ曲線用
-	//XMFLOAT3	P0;		
-	//XMFLOAT3	P1;
-	//XMFLOAT3	P2;
-	//float		s;				//ベジェ曲線の比率
 };
-
-//struct ANIME_PATTERN
-//{
-//	int animepattern;
-//	int x;
-//	int y;
-//
-//};
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -160,7 +152,7 @@ void PlayerGravity(int num);
 //ジャンプ処理
 void SetJump(int num);
 void PlayerJump(int num);
-
+void PlayerFlash(XMFLOAT3* pos,int num);
 void SetPlayerJump(void);
 
 // 影表示
