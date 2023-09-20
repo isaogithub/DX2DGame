@@ -410,7 +410,7 @@ void UpdateTutorial(void)
 					SetPause(FALSE);
 					heroine->use = FALSE;
 					g_MessageNum = -1;
-					SetResult(GAMECLEAR,BOSS);
+					SetResult(GAMECLEAR,RESULTTYPE_BOSS);
 					SetFade(FADE_OUT, MODE_RESULT);
 				}
 				break;
@@ -615,49 +615,22 @@ void DrawMessage(void)
 	material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	//switch (g_MessageDisplay)
-	//{
-	//case MESSAGE_DOOR01:
-
-	//	g_MessageDisplay = 0;
-	//	break;
-	//case MESSAGE_DOOR02:
-
-	//	g_MessageDisplay = 1;
-	//	break;
-	//case BOSSNODEAD:
-
-	//	g_MessageDisplay = 3;
-	//	break;
-
-	//case HEROINE:
-
-	//	g_MessageDisplay = 4;
-	//	break;
-
-	//}
-
-	
-
-	//for (int i = 0; i < MESSAGE_MAX; i++)
 	{
-		//if (g_Messagegame[i].display && g_Messagegame[i].use == TRUE)
-		{
-			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Message[g_MessageNum]);
+		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Message[g_MessageNum]);
 
-			// １枚のポリゴンの頂点とテクスチャ座標を設定
-			SetSpriteColor(g_VertexBuffer,
-				960.0f,
-				850.0f,
-				MESSAGE_TEXTURE_WIDTH,
-				MESSAGE_TEXTURE_HEIGHT,
-				0.0f, 0.0f, 1.0f, 1.0f,
-				XMFLOAT4(1.0f, 1.0f, 1.0f, 0.7f));
+		// １枚のポリゴンの頂点とテクスチャ座標を設定
+		SetSpriteColor(g_VertexBuffer,
+			960.0f,
+			850.0f,
+			MESSAGE_TEXTURE_WIDTH,
+			MESSAGE_TEXTURE_HEIGHT,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			XMFLOAT4(1.0f, 1.0f, 1.0f, 0.7f));
 
-			// ポリゴン描画
-			GetDeviceContext()->Draw(4, 0);
-		}
+		// ポリゴン描画
+		GetDeviceContext()->Draw(4, 0);
 	}
+	
 	// テクスチャ設定
 
 }

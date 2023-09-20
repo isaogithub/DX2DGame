@@ -188,7 +188,7 @@ static	int g_boss_state_AnimeMax[BOSS_STATE_MAX][4] = { //各テクスチャの分割数
 static BOOL		 g_Load = FALSE;			// 初期化を行ったかのフラグ
 	
 static ENEMY	g_Enemy[ENEMY_MAX];		// エネミー構造体
-static ENEMY	g_Boss[BOSS_MAX];
+static BOSS	g_Boss[BOSS_MAX];
 
 static SKILL	g_Skill002[SKILL2_MAX];
 static SKILL3	g_Skill003[SKILL3_MAX];
@@ -438,12 +438,6 @@ HRESULT InitEnemy(void)
 			g_Enemy[i].stop = TRUE;							//停止状態になってる？YES
 			g_Enemy[i].stopframe = 60.0f;					//停止状態続いている時間
 
-
-			//線形補間用
-			g_Enemy[i].time = 0.0f;		// 線形補間用のタイマーをクリア
-			g_Enemy[i].tblNo = 0;		// 再生する行動データテーブルNoをセット
-			g_Enemy[i].tblMax = 0;		// 再生する行動データテーブルのレコード数をセット
-
 			g_EnemyCnt++;
 		}
 
@@ -507,9 +501,9 @@ HRESULT InitEnemy(void)
 			g_Enemy[i].attack = FALSE;			//攻撃フラグ
 			g_Enemy[i].attacktime = 0;		//攻撃時間カウンター
 
-			g_Enemy[i].skill01 = FALSE;
-			g_Enemy[i].skill01Cnt = 0;
-			g_Enemy[i].skill01delaytime = 0;
+			g_Enemy[i].skill = FALSE;
+			g_Enemy[i].skillCnt = 0;
+			g_Enemy[i].skilldelaytime = 0;
 
 			g_Enemy[i].skill02 = FALSE;
 
@@ -530,12 +524,6 @@ HRESULT InitEnemy(void)
 			g_Enemy[i].stop = TRUE;
 			g_Enemy[i].stopframe = 60.0f;
 
-			//g_Enemy[i].knockmoveY = g_Enemy[i].move;
-
-
-			g_Enemy[i].time = 0.0f;		// 線形補間用のタイマーをクリア
-			g_Enemy[i].tblNo = 0;		// 再生する行動データテーブルNoをセット
-			g_Enemy[i].tblMax = 0;		// 再生する行動データテーブルのレコード数をセット
 
 			g_EnemyCnt++;
 		}
@@ -1072,13 +1060,6 @@ void InitBoss(void)
 		g_Boss[i].gravityCnt = 0.0f;
 
 
-		g_Boss[i].movedis = 0.0f;
-		g_Boss[i].needmovedis = 0.0f;
-		g_Boss[i].knockmoveX = g_Boss[i].move.x;
-
-		g_Boss[i].stop = TRUE;
-		g_Boss[i].stopframe = 60.0f;
-
 		//g_Enemy[i].knockmoveY = g_Enemy[i].move;
 
 		g_Boss[i].tblMax = sizeof(g_MoveTbl0) / sizeof(INTERPOLATION_DATA2);	// 再生するアニメデータのレコード数をセット
@@ -1216,7 +1197,7 @@ void UpdateBoss(void)
 
 			case BOSS_STATE_SKILL001:
 
-				Eskill1(i);
+				Skill001Timer(i);
 				break;
 
 			case BOSS_STATE_SKILL002:
@@ -2016,14 +1997,14 @@ void DrawEnemyHP(int num)
 
 void SetSkill000(int num)
 {
-	g_Enemy[num].time = 0.0f;
+	g_Boss[num].time = 0.0f;
 	g_Boss[num].tblNo = 0;
 	g_Boss[num].tblMax = sizeof(g_MoveTbl0) / sizeof(INTERPOLATION_DATA2);
 
 }
 void SetSkill005(int num)
 {
-	g_Enemy[num].time = 0.0f;
+	g_Boss[num].time = 0.0f;
 	g_Boss[num].tblNo = 1;
 	g_Boss[num].tblMax = sizeof(g_MoveTbl1) / sizeof(INTERPOLATION_DATA2);
 }
@@ -2443,7 +2424,7 @@ void InitSkill001(void)
 
 
 }
-void Eskill1(int num)
+void Skill001Timer(int num)
 {
 	PLAYER* player = GetPlayer();
 	{
@@ -2479,7 +2460,6 @@ void Eskill1(int num)
 			//g_Boss[num].state = ENEMY_STATE_STAND;
 			g_initMoveX = 5.0f;
 
-			g_Boss[num].stop = TRUE;
 			g_Boss[num].state = BOSS_STATE_IDLE;
 			g_Boss[num].skill01Cnt = 0;
 			g_changeable = TRUE;
@@ -2515,8 +2495,6 @@ void InitSkill002(void)
 	{
 		g_Skill002[i].use = FALSE;
 		g_Skill002[i].pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	/*	g_Skill002[i].w = 440.0f;
-		g_Skill002[i].h = 360.0f;	*/	
 		g_Skill002[i].w = 660.0f;
 		g_Skill002[i].h = 480.0f;
 		g_Skill002[i].texNo = 1;
@@ -3107,7 +3085,7 @@ BOOL isBossDead(void)
 	return FALSE;
 }
 
-ENEMY *GetBoss(void)
+BOSS *GetBoss(void)
 {
 	return &g_Boss[0];
 }

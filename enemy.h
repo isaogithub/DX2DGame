@@ -113,6 +113,54 @@ struct ENEMY
 
 	BOOL		attack;			//攻撃フラグ
 
+	BOOL		skill;
+	BOOL		skillCnt;
+	BOOL		skilldelaytime;
+
+	BOOL		skill02;
+
+
+	int			attacktime;		//攻撃時間カウンター
+
+
+	BOOL		onGround;		// エネミーが
+	float		gravityCnt;
+
+	int			str;			// 攻撃力
+	BOOL		dir;			//エネミー方向
+	XMFLOAT3	move;			// 移動速度
+	XMFLOAT3	amove;			// プレイヤーを見つけた速度
+
+};
+
+struct BOSS
+{
+	BOOL		use;			// true:使っている  false:未使用
+	BOOL		display;
+	float		w, h;			// 幅と高さ
+	float		countAnim;		// アニメーションカウント
+	int			patternAnim;	// アニメーションパターンナンバー
+	int			texNo;			// テクスチャ番号
+
+	int			type;			//エネミーのタイプ
+	int			state;
+	int			ostate;
+	XMFLOAT3	pos;			// ポリゴンの座標
+	XMFLOAT3	opos;
+
+	XMFLOAT3	rot;			// ポリゴンの回転量
+	XMFLOAT3	scl;			// ポリゴンの拡大縮小
+
+	int			hp;				// エネミーのHP
+	int			damagedType;	//遭ったダメージは何の技？
+
+	int			hitCnt;			// 当たり判定カウンタ
+	BOOL		hit;			// 当てられた
+	BOOL		hitting;		// 当てられた途中
+	BOOL		clear;			// 透明フラグ
+
+	BOOL		attack;			//攻撃フラグ
+
 	BOOL		skill01;
 	BOOL		skill01Cnt;
 	BOOL		skill01delaytime;
@@ -134,10 +182,6 @@ struct ENEMY
 	float		time;			// 線形補間用
 	int			tblNo;			// 行動データのテーブル番号
 	int			tblMax;			// そのテーブルのデータ数
-
-	//INTERPOLATION_DATA* tbl_adr;			// アニメデータのテーブル先頭アドレス
-	//int				tbl_size;			// 登録したテーブルのレコード総数
-	//float				move_time;			// 実行時間
 };
 
 
@@ -191,7 +235,7 @@ void SetEDamagedType(int num, int type);
 void BGravityProcess(int num);
 //エネミーのスキル１
 void InitSkill001(void);
-void Eskill1(int num);
+void Skill001Timer(int num);
 
 void SetSkill002Pos(void);
 
@@ -222,7 +266,7 @@ void Skill005(int num);
 
 
 BOOL isBossDead(void);
-ENEMY* GetBoss(void);
+BOSS* GetBoss(void);
 void SetBDamagedType(int type);
 void DrawBossHP(int num);
 void Down(void);

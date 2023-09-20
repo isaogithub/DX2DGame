@@ -128,6 +128,20 @@ static	int g_effect_state_AnimeMax[EFFECT_MAX][4] = { //各テクスチャの分割数
 		 1,		1,			1,			5,		//影
 };
 
+static XMFLOAT3 g_CheckPoint[CHECKPOINT_MAX] = {
+
+	XMFLOAT3(3800.0f,1080.0f,0.0f),
+	XMFLOAT3(300.0f,2160.0f,0.0f),
+};
+
+//static float  g_CheckPoint[CHECKPOINT_MAX] = {
+//	1080.0f,2160.0f,
+//};
+
+static  BOOL	BGXScroll;
+static  BOOL	BGYScroll;
+
+
 static BOOL		g_Load = FALSE;			// 初期化を行ったかのフラグ
 static PLAYER	g_Player[PLAYER_MAX];	// プレイヤー構造体
 static PLAYERICON	g_PlayerIcon;
@@ -160,6 +174,9 @@ XMFLOAT3 g_SavePoint[SAVEPOINT_MAX];
 HRESULT InitPlayer(void)
 {
 	ID3D11Device* pDevice = GetDevice();
+
+	BGXScroll = TRUE;
+	BGYScroll = TRUE;
 
 	g_bulletTime = 0;
 	g_clickpos = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -296,7 +313,7 @@ HRESULT InitPlayer(void)
 		//g_Player[0].pos = XMFLOAT3(1000.0f, 2000.0f, 0.0f);	// 中心点から表示
 		g_Player[0].pos = XMFLOAT3(100.0f, 900.0f, 0.0f);	// 中心点から表示
 #ifndef _DEBUG
-		//g_Player[0].pos = XMFLOAT3(100.0f, 900.0f, 0.0f);	// 中心点から表示
+		g_Player[0].pos = XMFLOAT3(500.0f, 1900.0f, 0.0f);	// 中心点から表示
 #endif // !_DEBUG
 		break;
 	case MODE_BOSS:
@@ -383,13 +400,13 @@ void UpdatePlayer(void)
 				//if (g_Player[i].life > 0) SetFade(FADE_OUT, MODE_GAME);
 				if (GetMode() == MODE_GAME)
 				{
-					SetResult(GAMEOVER, GAME);
+					SetResult(GAMEOVER, RESULTTYPE_GAME);
 					SetFade(FADE_OUT, MODE_RESULT);
 
 				}
 				else if (GetMode() == MODE_BOSS)
 				{
-					SetResult(GAMEOVER, BOSS);
+					SetResult(GAMEOVER, RESULTTYPE_BOSS);
 					SetFade(FADE_OUT, MODE_RESULT);
 				}
 			}
@@ -544,15 +561,27 @@ void UpdatePlayer(void)
 					if (g_Player[i].pos.y > bg->h)	g_Player[i].pos.y = bg->h;
 				}
 
-				if (GetMode() != MODE_BOSS)
+				if (GetMode() == MODE_TUTORIAL)
 				{// プレイヤーの立ち位置からMAPのスクロール座標を計算する
 					bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
 					if (bg->pos.x < 0) bg->pos.x = 0;
 					if (bg->pos.x > bg->w - SCREEN_WIDTH) bg->pos.x = bg->w - SCREEN_WIDTH;
+				}
+				else if (GetMode() == MODE_GAME)
+				{// プレイヤーの立ち位置からMAPのスクロール座標を計算する
 
-					bg->pos.y = g_Player[i].pos.y - PLAYER_DISP_Y;
-					if (bg->pos.y < 0) bg->pos.y = 0;
-					if (bg->pos.y > bg->h - SCREEN_HEIGHT) bg->pos.y = bg->h - SCREEN_HEIGHT;
+					bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
+					if (bg->pos.x < 0) bg->pos.x = 0;
+					if (bg->pos.x > bg->w - SCREEN_WIDTH) bg->pos.x = bg->w - SCREEN_WIDTH;
+
+					for (int j = 0; j < CHECKPOINT_MAX; j++)
+					{
+						if (CollisionBB(g_Player[i].pos, g_Player[i].w, g_Player[i].h, g_CheckPoint[j], 1000.0f, 10.0f))
+						{
+							SetBGSFrame(0, SCREEN_HEIGHT, 60);
+							
+						}							
+					}
 
 				}
 			}
@@ -714,7 +743,7 @@ void UpdatePlayer(void)
 		if (GetMode() == MODE_BOSS)
 		{// 移動が終わったらエネミーとの当たり判定
 
-			ENEMY* boss = GetBoss();
+			BOSS* boss = GetBoss();
 			for (int j = 0; j < BOSS_MAX; j++)
 			{
 				if (boss[j].use == FALSE)continue;
@@ -1240,7 +1269,7 @@ void PlayerAttackProcess(int num)
 				//攻撃処理時の当たり判定
 				{
 
-					ENEMY* boss = GetBoss();
+					BOSS* boss = GetBoss();
 					for (int j = 0; j < BOSS_MAX; j++)
 					{
 						if (boss[j].use == FALSE)continue;
@@ -1712,7 +1741,7 @@ void UltTimer(int num)
 		{
 			if (GetMode() == MODE_BOSS)
 			{
-				ENEMY* boss = GetBoss();
+				BOSS* boss = GetBoss();
 
 				for (int i = 0; i < BOSS_MAX; i++)
 				{

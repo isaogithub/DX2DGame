@@ -39,16 +39,28 @@ static char *g_TexturName[TEXTURE_MAX] = {
 
 static BOOL	g_Load = FALSE;		// 初期化を行ったかのフラグ
 static BG	g_BG;
+static BOOL g_Scroll;
 
+static int  g_BGSFlame;
+static int	g_frameCnt;
+static float g_MaxX;
+static float g_MaxY;
 
-
+static BOOL	g_shaking;
 //=============================================================================
 // 初期化処理
 //=============================================================================
 HRESULT InitBG(void)
 {
-	ID3D11Device *pDevice = GetDevice();
+	g_Scroll = FALSE;
 
+	g_BGSFlame = 0;
+	g_frameCnt = 0;
+	g_MaxX = 0.0f;
+	g_MaxY = 0.0f;
+
+	g_shaking = FALSE;
+	ID3D11Device *pDevice = GetDevice();
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
@@ -92,7 +104,7 @@ HRESULT InitBG(void)
 		// 変数の初期化
 		g_BG.w = 4000.0f;
 		g_BG.h = 3500.0f;
-		g_BG.pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		g_BG.pos = XMFLOAT3(0.0f, 80.0f, 0.0f);
 		g_BG.texNo = 1;
 
 		g_BG.scrl = 0.0f;		// TEXスクロール
@@ -158,6 +170,13 @@ void UpdateBG(void)
 		g_BG.scrl -= 0.005f;
 		break;
 	case MODE_GAME:
+
+		if (g_Scroll == TRUE)
+		{
+			BGScrool();
+		}
+
+		break;
 	case MODE_BOSS:
 
 		break;
@@ -315,7 +334,37 @@ BG* GetBG(void)
 	return &g_BG;
 }
 
+void SetBGSFrame(float MaxX,float MaxY,float MaxFrame)
+{
+	if (g_Scroll == TRUE)return;
+	g_Scroll = TRUE;
+	g_MaxX = MaxX;
+	g_MaxY = MaxY;
+	g_BGSFlame = MaxFrame;
+	g_frameCnt = MaxFrame;
 
+	return;
+}
+void BGScrool(void)
+{
+	if (g_Scroll == FALSE)return;
+
+	if (g_frameCnt-- > 0)
+	{
+		float scrollx = g_MaxX / g_BGSFlame;
+		float scrolly = g_MaxY / g_BGSFlame;
+
+		g_BG.pos.x += scrollx;
+		g_BG.pos.y += scrolly;
+	}
+	else
+	{
+		g_frameCnt = 60;
+		g_Scroll = FALSE;
+	}
+
+	return;
+}
 
 
 

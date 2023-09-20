@@ -37,7 +37,7 @@
 
 #define PLAYER_HP_MAX	(200)
 #define PLAYER_MP_MAX	(100)
-
+#define CHECKPOINT_MAX	(2)
 
 enum CHAR_DIR
 {

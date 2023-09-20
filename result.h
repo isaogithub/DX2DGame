@@ -22,8 +22,8 @@ enum RESULT
 
 enum RESULTTYPE
 {
-	GAME,
-	BOSS,
+	RESULTTYPE_GAME,
+	RESULTTYPE_BOSS,
 };
 
 //*****************************************************************************

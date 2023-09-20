@@ -814,6 +814,11 @@ void OnClickButton(int button)
 	switch (button)
 	{
 	case BUTTON_START_GAME:
+#ifndef DEBUG
+		SetFade(FADE_OUT, MODE_GAME);
+		break;
+#endif // DEBUG
+
 		SetFade(FADE_OUT, MODE_OPENING);
 		break;
 
