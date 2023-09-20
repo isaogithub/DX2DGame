@@ -481,7 +481,7 @@ HRESULT InitEnemy(void)
 		{
 			g_Enemy[i].use = TRUE;
 			g_Enemy[i].type = ENEMY_TYPE_SLIME;
-			g_Enemy[i].state = BOSS_STATE_IDLE;
+			g_Enemy[i].state = SLIME_STATE_IDLE;
 			g_Enemy[i].pos = XMFLOAT3(200.0f + i * 400.0f, 500.0f, 0.0f);	// 中心点から表示
 			g_Enemy[i].opos = g_Enemy[i].pos;							//前の座標を保存する
 			g_Enemy[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
