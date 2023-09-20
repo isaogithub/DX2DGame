@@ -110,6 +110,12 @@ static char* g_EffectName[EFFECT_MAX] = {
 };
 
 
+static XMFLOAT3 CheckPoint[] = {
+	XMFLOAT3(100.0f,900.0f,0.0f),
+	XMFLOAT3(100.0f,900.0f,0.0f),
+	XMFLOAT3(100.0f,900.0f,0.0f),
+};
+
 static	int g_player_state_AnimeMax[PLAYER_STATE_MAX][4] = { //各テクスチャの分割数
 //  Pattern_Max	divideY  divideX	animewait
 		 4,		1,			4,			10,	    //STAND 
