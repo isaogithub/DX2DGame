@@ -96,7 +96,6 @@ static int g_MessageNum;
 static BOOL g_MessageDisplay;
 
 static int  g_stopFrame;
-
 HRESULT InitTutorial(void)
 {
 	ID3D11Device* pDevice = GetDevice();
@@ -108,7 +107,6 @@ HRESULT InitTutorial(void)
 
 	g_stopFrame = 0;
 	g_pauseNum = 0;
-
 	//テクスチャ生成
 
 	switch (GetMode())

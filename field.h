@@ -327,3 +327,7 @@ void InitDropItem(void);
 void UpdateDropItem(void);
 void DrawDropItem(void);
 void SetDropItem(XMFLOAT3 pos);
+
+void InitTrapWall(void);
+void UpdateTrapWall(void);
+void DrawTrapWall(void);

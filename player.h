@@ -168,13 +168,13 @@ BOOL PlayerBulletProcess(int  num);
 //下に落ちた処理
 void PlayerReturn(int num);
 
-//プレイヤーのHP表示
-void DrawPlayerHP(int num);
-//プレイヤーのMP表示
-void DrawPlayerMP(int num);
-
-//プレイヤー状態表示
-void DrawPlayerState(int num);
+////プレイヤーのHP表示
+//void DrawPlayerHP(int num);
+////プレイヤーのMP表示
+//void DrawPlayerMP(int num);
+//
+////プレイヤー状態表示
+//void DrawPlayerState(int num);
 
 //足場判断処理
 BOOL IsFootCol(int num);
@@ -193,7 +193,8 @@ void BulletTimer(int num);
 void UltTimer(int num);
 void Guard(int num);
 
-
-void InitPlayerIcon(void);
-void UpdatePlayerIcon(void);
-void  DrawPlayerIcon(void);
+//
+//void InitPlayerIcon(void);
+//void UpdatePlayerIcon(void);
+//void  DrawPlayerIcon(void);
+void DrawEyeDark(void);

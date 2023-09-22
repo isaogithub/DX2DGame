@@ -423,7 +423,6 @@ void Update(void)
 			UpdatePlayer();
 			UpdateEnemy();
 			UpdateBullet(); 
-			UpdateNuma();
 
 			UpdateEffect();
 			UpdateHitScore();
@@ -517,14 +516,9 @@ void Draw(void)
 
 		DrawEnemy();
 		DrawPlayer();
-
-
-
 		DrawSkill002();
-		DrawNuma();
-
 		DrawBullet();		// d‚È‚é‡”Ô‚ğˆÓ¯‚µ‚Ä‚Ë
-
+		DrawEyeDark();
 		DrawEffect();
 		if (g_PauseUpdate)
 		{

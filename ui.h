@@ -49,15 +49,35 @@ struct UI
 // プロトタイプ宣言
 //*****************************************************************************
 HRESULT InitUI(void);
-void UninitUI(void);
-void UpdateUI(void);
-void DrawUI(void);
+void InitSkillUI(void);
+void InitPlayerIconUI(void);
 
-UI* GetUI(void);
-void SetUIUSE(int type, BOOL tf);
-int	GetUIClicked();
-int GetUIPressed();
+void UninitUI(void);
+
+void UpdateUI(void);
+void UpdateSkillUI(void);
+void UpdatePlayerIconUI(void);
+
+void DrawUI(void);
+void DrawSkillUI(void);
+void DrawPlayerIconUI(void);
+//プレイヤーのHP表示
+void DrawPlayerHP(void);
+//プレイヤーのMP表示
+void DrawPlayerMP(void);
+//プレイヤー状態表示
+void DrawPlayerState(void);
+
+
+UI* GetSkillUI(void);
+void SetSkillUIUSE(int type, BOOL tf);
+int	GetSkillUIClicked();
+int GetSkillUIPressed();
 BOOL isPressGuard(void);
+
+
+
+
 ////プレイヤーのHP表示
 //void DrawUIHP(int num);
 ////プレイヤーのMP表示

@@ -47,6 +47,8 @@ static float g_MaxX;
 static float g_MaxY;
 
 static BOOL	g_shaking;
+
+static int  g_ScrollNum;
 //=============================================================================
 // 初期化処理
 //=============================================================================
@@ -58,7 +60,7 @@ HRESULT InitBG(void)
 	g_frameCnt = 0;
 	g_MaxX = 0.0f;
 	g_MaxY = 0.0f;
-
+	g_ScrollNum = 0;
 	g_shaking = FALSE;
 	ID3D11Device *pDevice = GetDevice();
 	//テクスチャ生成

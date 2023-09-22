@@ -43,7 +43,7 @@
 
 
 #define		TEXTURE_TUTORIAL_MAX	(4)
-#define		TEXTURE_MAX		(17)		// テクスチャの数
+#define		TEXTURE_MAX		(19)		// テクスチャの数
 
 #define		MAPCHIP_TUTORIAL_WIDTH	(10)		//マップチップ
 #define		MAPCHIP_TUTORIAL_HEIGHT	(2)
@@ -71,7 +71,7 @@
 #define DROPITEM_PATTERN_DIVIDE_X				(5)
 #define DROPITEM_PATTERN_DIVIDE_Y				(2)
 #define DROPITEM_PATTERN_MAX					(DROPITEM_PATTERN_DIVIDE_X * DROPITEM_PATTERN_DIVIDE_Y)
-
+#define TRAPWALL_MAX							(5)
 /*******************************************************************************
 * 構造体定義
 *******************************************************************************/
@@ -108,6 +108,8 @@ static char* g_TexturName[TEXTURE_MAX] = {
 	"data/MAPCHIP/mapchip80_tutorial.png",
 	"data/TEXTURE/door.png",//ヒロインの
 	"data/CHARA/hiroine.png",//ヒロインの
+	"data/TEXTURE/trap2_160.png",//ヒロインの
+	"data/TEXTURE/trap3_240.png",//ヒロインの
 };
 
 
@@ -134,10 +136,10 @@ static TOGE g_Toge[TOGE_MAX];
 static DROP_ITEM g_Dropitem[DROPITEM_MAX];
 
 INTERACT_OB g_IOBgame[IOB_MAX];
-
-
 INTERACT_OB g_Door;
 INTERACT_OB g_Heroine;
+
+ITEM2	g_TrapWall[TRAPWALL_MAX];
 //
 
 /*******************************************************************************
@@ -214,7 +216,7 @@ HRESULT InitField(void)
 		InitHint();
 		InitIOB();
 		InitToge();
-
+		InitTrapWall();
 
 		break;
 
@@ -297,6 +299,8 @@ void UpdateField(void)
 		UpdateHint();
 		UpdateKey();
 		UpdateToge();
+		UpdateTrapWall();
+
 		break;
 
 	case MODE_BOSS:
@@ -491,6 +495,7 @@ void DrawField(void)
 		DrawHint();
 		DrawKey();
 		DrawToge();
+		DrawTrapWall();
 
 		break;
 
@@ -504,7 +509,7 @@ void DrawField(void)
 				{
 					/*GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[ g_mapChip [ g_map[y][x] ].texNo ]);*/
 					GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
-
+					 
 					//float mx = (float)( x * TEXTURE_WIDTH ) - fmodf(scrollx, TEXTURE_WIDTH);//ウィンドウの座標
 					//float my = (float)( y * TEXTURE_HEIGHT) - fmodf(scrolly, TEXTURE_HEIGHT);
 					//float mx = (float)(x * TEXTURE_WIDTH) + TEXTURE_WIDTH / 2 - bg->pos.x;//ウィンドウの座標
@@ -1881,4 +1886,76 @@ void SetDropItem(XMFLOAT3 pos)
 			return;
 		}
 	}
+}
+
+
+void InitTrapWall(void)
+{
+	for (int i = 0; i < 2; i++)
+	{
+		g_TrapWall[i].use = TRUE;
+		g_TrapWall[i].pos = XMFLOAT3(200.0f * i ,400.0f ,0.0f);
+		g_TrapWall[i].w = 160;
+		g_TrapWall[i].h = 800;
+		g_TrapWall[i].texNo = 17;
+	}
+
+	for (int i = 2; i < TRAPWALL_MAX; i++)
+	{
+		g_TrapWall[i].use = TRUE;
+		g_TrapWall[i].pos = XMFLOAT3(400.0f * i, 400.0f, 0.0f);
+		g_TrapWall[i].w = 240;
+		g_TrapWall[i].h = 800;
+		g_TrapWall[i].texNo = 18;
+	}
+
+}
+
+void UpdateTrapWall(void)
+{
+	for (int i = 0; i < TRAPWALL_MAX; i++)
+	{
+		if (g_TrapWall[i].use == TRUE)
+		{
+			g_TrapWall[i].pos.y += 1.0f;
+		}
+		else g_TrapWall[i].pos.y -= 1.0f;
+
+		XMFLOAT3 trapwallDown = XMFLOAT3(g_TrapWall[i].pos.x,
+			g_TrapWall[i].pos.y + g_TrapWall[i].h / 2, 0.0f);
+		if (FieldCollision(trapwallDown, g_TrapWall[i].w, 10.0f))
+		{
+			g_TrapWall[i].use = !(g_TrapWall[i].use);
+		}
+		
+	}
+}
+
+void DrawTrapWall(void)
+{
+	BG* bg = GetBG();
+	//とげとげを描画する
+	for (int i = 0; i < TRAPWALL_MAX; i++)
+	{
+		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_TrapWall[i].texNo]);
+
+		float mx = (float)g_TrapWall[i].pos.x - bg->pos.x;//ウィンドウの座標
+		float my = (float)g_TrapWall[i].pos.y - bg->pos.y;
+		float mw = g_TrapWall[i].w;
+		float mh = g_TrapWall[i].h;
+
+		float tw = 1.0f;	// テクスチャの幅の比率
+		float th = 1.0f;		// テクスチャの高さの比率
+		float tx = 0.0f;
+		float ty = 0.0f;
+
+		SetSprite(g_VertexBuffer,
+			mx, my, mw, mh,
+			tx, ty, tw, th);
+		// ポリゴン描画
+		GetDeviceContext()->Draw(4, 0);
+
+	}
+
+
 }

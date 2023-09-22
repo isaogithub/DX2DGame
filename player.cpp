@@ -28,7 +28,7 @@
 #define TEXTURE_COLLISION_WIDTH		(80)	//
 #define TEXTURE_COLLISION_HEIGHT	(100)	//
 
-#define TEXTURE_MAX					(3)		// テクスチャの数
+#define TEXTURE_MAX					(4)		// テクスチャの数
 #define EFFECT_MAX					(1)
 //#define TEXTURE_PATTERN_DIVIDE_X	(3)		// アニメパターンのテクスチャ内分割数（X)
 //#define TEXTURE_PATTERN_DIVIDE_Y	(4)		// アニメパターンのテクスチャ内分割数（Y)
@@ -64,8 +64,8 @@
 
 #define SAVEPOINT_MAX	(2)
 
-#define GAUGE_WIDTH			(220)
-#define GAUGE_HEIGHT		(30)
+//#define GAUGE_WIDTH			(220)
+//#define GAUGE_HEIGHT		(30)
 
 #define BULLET_DELAY_CNT	(10)
 
@@ -91,6 +91,7 @@ static char* g_TextureName[TEXTURE_MAX] = {
 		"data/TEXTURE/bar_white.png",
 		"data/TEXTURE/state.png",
 		"data/TEXTURE/heroicon.png",
+		"data/EFFECT/effect_dark.png",
 };
 
 static char* g_StateName[PLAYER_STATE_MAX] = {
@@ -313,7 +314,7 @@ HRESULT InitPlayer(void)
 		//g_Player[0].pos = XMFLOAT3(1000.0f, 2000.0f, 0.0f);	// 中心点から表示
 		g_Player[0].pos = XMFLOAT3(100.0f, 900.0f, 0.0f);	// 中心点から表示
 #ifndef _DEBUG
-		g_Player[0].pos = XMFLOAT3(500.0f, 1900.0f, 0.0f);	// 中心点から表示
+		//g_Player[0].pos = XMFLOAT3(500.0f, 1900.0f, 0.0f);	// 中心点から表示
 #endif // !_DEBUG
 		break;
 	case MODE_BOSS:
@@ -330,7 +331,6 @@ HRESULT InitPlayer(void)
 		break;
 	}
 
-	InitPlayerIcon();
 
 
 
@@ -417,7 +417,7 @@ void UpdatePlayer(void)
 
 		ENEMY* enemy = GetEnemy();
 		BG* bg = GetBG();
-		UI* ui = GetUI();
+		UI* ui = GetSkillUI();
 		int mskill = -1;
 
 		// 生きてるプレイヤーだけ処理をする
@@ -525,7 +525,7 @@ void UpdatePlayer(void)
 				}
 
 
-				if ((GetKeyboardTrigger(DIK_SPACE) || (IsButtonTriggered(0, BUTTON_X)) || (GetUIClicked() == UI_JUMP)))
+				if ((GetKeyboardTrigger(DIK_SPACE) || (IsButtonTriggered(0, BUTTON_X)) || (GetSkillUIClicked() == UI_JUMP)))
 				{
 					g_Player[i].jumptimes--;
 
@@ -602,7 +602,7 @@ void UpdatePlayer(void)
 				//ガード
 				if (((GetKeyboardPress(DIK_H)) && (g_Player[i].state == PLAYER_STATE_STAND)) ||
 					(IsButtonPressed(0, BUTTON_L) && (g_Player[i].state == PLAYER_STATE_STAND)) ||
-					((GetUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_STAND)))
+					((GetSkillUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_STAND)))
 				{
 					if (g_Player[i].onGround == TRUE)
 					{
@@ -618,7 +618,7 @@ void UpdatePlayer(void)
 
 				if (((GetKeyboardRelease(DIK_H)) && (g_Player[i].state == PLAYER_STATE_GUARD)) ||
 					((GetKeyboardRelease(DIK_H)) && !IsButtonPressed(0, BUTTON_L) && (g_Player[i].state == PLAYER_STATE_GUARD)) ||
-					(((GetUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_GUARD))))
+					(((GetSkillUIPressed() == UI_GUARD) && (g_Player[i].state == PLAYER_STATE_GUARD))))
 
 				{
 					g_Player[i].state = PLAYER_STATE_STAND;
@@ -628,13 +628,13 @@ void UpdatePlayer(void)
 				}
 
 				//ブレイド
-				if ((GetKeyboardTrigger(DIK_J)) || IsButtonTriggered(0, BUTTON_B) || GetUIClicked() == UI_BLADE)
+				if ((GetKeyboardTrigger(DIK_J)) || IsButtonTriggered(0, BUTTON_B) || GetSkillUIClicked() == UI_BLADE)
 				{
 					g_Player[i].state = PLAYER_STATE_BLADE;
 					g_SkillFrameCnt = 0;
 				}
 				//バレット
-				if (GetKeyboardPress(DIK_K) || IsButtonPressed(0, BUTTON_Y) || GetUIClicked() == UI_BULLET)
+				if (GetKeyboardPress(DIK_K) || IsButtonPressed(0, BUTTON_Y) || GetSkillUIClicked() == UI_BULLET)
 				{
 					g_BulletDelay--;
 					if (g_BulletDelay < 0)
@@ -655,7 +655,7 @@ void UpdatePlayer(void)
 
 				}
 				//重力弾
-				if (GetKeyboardTrigger(DIK_L) || IsButtonTriggered(0, BUTTON_R) || GetUIClicked() == UI_BLACKHOLE)
+				if (GetKeyboardTrigger(DIK_L) || IsButtonTriggered(0, BUTTON_R) || GetSkillUIClicked() == UI_BLACKHOLE)
 				{
 					if (g_Player[i].mp >= BLACKHOLE_COST_MP)
 					{
@@ -672,7 +672,7 @@ void UpdatePlayer(void)
 					}
 				}
 				//ウルトラ
-				if (GetKeyboardTrigger(DIK_U) || IsButtonTriggered(0, BUTTON_R2) || GetUIClicked() == UI_ULT)
+				if (GetKeyboardTrigger(DIK_U) || IsButtonTriggered(0, BUTTON_R2) || GetSkillUIClicked() == UI_ULT)
 				{
 					if (g_Player[i].mp >= PLAYER_MP_MAX)
 					{
@@ -777,7 +777,6 @@ void UpdatePlayer(void)
 			}
 		}
 	}
-	UpdatePlayerIcon();
 
 	//// 現状をセーブする
 	//if (GetKeyboardTrigger(DIK_S))
@@ -932,7 +931,7 @@ void DrawPlayer(void)
 			}
 		}
 		//プレイヤーのHP表示
-		DrawPlayerState(i);
+		//DrawPlayerState(i);
 		//プレイヤーSikll表示
 		//DrawPlayerSkill(i);
 	}
@@ -1414,142 +1413,141 @@ void DrawPlayerShadow(void)
 
 
 
-//プレイヤーのHP表示
-void DrawPlayerHP(int num)
-{
-	// HPの表示
-	BG* bg = GetBG();
-	{
-		// 下敷きのゲージ（枠的な物）
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
+////プレイヤーのHP表示
+//void DrawPlayerHP(int num)
+//{
+//	// HPの表示
+//	BG* bg = GetBG();
+//	{
+//		// 下敷きのゲージ（枠的な物）
+//		// テクスチャ設定
+//		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
+//
+//		//ゲージの位置やテクスチャー座標を反映
+//		float px = 263.0f;		// ゲージの表示位置X
+//		float py = 135.0f;		// ゲージの表示位置Y
+//		float pw = 220;	// ゲージの表示幅
+//		float ph = 30.0f;		// ゲージの表示高さ
+//
+//		float tw = 1.0f;	// テクスチャの幅
+//		float th = 1.0f;	// テクスチャの高さ
+//		float tx = 0.0f;	// テクスチャの左上X座標
+//		float ty = 0.0f;	// テクスチャの左上Y座標
+//
+//		// １枚のポリゴンの頂点とテクスチャ座標を設定
+//		SetSpriteLTColor(g_VertexBuffer,
+//			px, py, pw, ph,
+//			tx, ty, tw, th,
+//			XMFLOAT4(0.0f, 0.0f, 0.0f, 0.9f));
+//
+//		// ポリゴン描画
+//		GetDeviceContext()->Draw(4, 0);
+//
+//
+//		// エネミーの数に従ってゲージの長さを表示してみる
+//		// テクスチャ設定
+//		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
+//
+//		//ゲージの位置やテクスチャー座標を反映
+//		pw = pw * ((float)g_Player[num].hp / PLAYER_HP_MAX);
+//
+//		// １枚のポリゴンの頂点とテクスチャ座標を設定
+//		SetSpriteLTColor(g_VertexBuffer,
+//			px, py, pw, ph,
+//			tx, ty, tw, th,
+//			XMFLOAT4(0.0f, 0.8f, 0.0f, 1.0f));
+//
+//		// ポリゴン描画
+//		GetDeviceContext()->Draw(4, 0);
+//
+//
+//	}
+//
+//}
+//
+////プレイヤーのMP表示
+//void DrawPlayerMP(int num)
+//{
+//	// HPの表示
+//	BG* bg = GetBG();
+//	{
+//		// 下敷きのゲージ（枠的な物）
+//		// テクスチャ設定
+//		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
+//
+//		//ゲージの位置やテクスチャー座標を反映
+//		float px = 263.0f;		// ゲージの表示位置X
+//		float py = 200.0f;		// ゲージの表示位置Y
+//		float pw = GAUGE_WIDTH;	// ゲージの表示幅
+//		float ph = GAUGE_HEIGHT;		// ゲージの表示高さ
+//
+//		float tw = 1.0f;	// テクスチャの幅
+//		float th = 1.0f;	// テクスチャの高さ
+//		float tx = 0.0f;	// テクスチャの左上X座標
+//		float ty = 0.0f;	// テクスチャの左上Y座標
+//
+//		float R = 0.0f;
+//		float G = 0.3f;
+//		float B = 0.8f;
+//		float Alpha = 1.0f;
+//
+//		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
+//
+//		//ゲージの位置やテクスチャー座標を反映
+//		float temp = ((float)g_Player[num].mp / PLAYER_MP_MAX);
+//		pw = pw * temp;
+//		if (pw >= GAUGE_WIDTH)
+//		{
+//			R = 0.11765f;
+//			G = 0.941f;
+//			B = 1.0f;
+//		}
+//		// １枚のポリゴンの頂点とテクスチャ座標を設定
+//		SetSpriteLTColor(g_VertexBuffer,
+//			px, py, pw, ph,
+//			tx, ty, tw, th,
+//			XMFLOAT4(R, G, B, Alpha));
+//
+//		// ポリゴン描画
+//		GetDeviceContext()->Draw(4, 0);
+//
+//
+//	}
+//
+//}
 
-		//ゲージの位置やテクスチャー座標を反映
-		float px = 263.0f;		// ゲージの表示位置X
-		float py = 135.0f;		// ゲージの表示位置Y
-		float pw = 220;	// ゲージの表示幅
-		float ph = 30.0f;		// ゲージの表示高さ
-
-		float tw = 1.0f;	// テクスチャの幅
-		float th = 1.0f;	// テクスチャの高さ
-		float tx = 0.0f;	// テクスチャの左上X座標
-		float ty = 0.0f;	// テクスチャの左上Y座標
-
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-		SetSpriteLTColor(g_VertexBuffer,
-			px, py, pw, ph,
-			tx, ty, tw, th,
-			XMFLOAT4(0.0f, 0.0f, 0.0f, 0.9f));
-
-		// ポリゴン描画
-		GetDeviceContext()->Draw(4, 0);
-
-
-		// エネミーの数に従ってゲージの長さを表示してみる
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
-
-		//ゲージの位置やテクスチャー座標を反映
-		pw = pw * ((float)g_Player[num].hp / PLAYER_HP_MAX);
-
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-		SetSpriteLTColor(g_VertexBuffer,
-			px, py, pw, ph,
-			tx, ty, tw, th,
-			XMFLOAT4(0.0f, 0.8f, 0.0f, 1.0f));
-
-		// ポリゴン描画
-		GetDeviceContext()->Draw(4, 0);
-
-
-	}
-
-}
-
-//プレイヤーのMP表示
-void DrawPlayerMP(int num)
-{
-	// HPの表示
-	BG* bg = GetBG();
-	{
-		// 下敷きのゲージ（枠的な物）
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
-
-		//ゲージの位置やテクスチャー座標を反映
-		float px = 263.0f;		// ゲージの表示位置X
-		float py = 200.0f;		// ゲージの表示位置Y
-		float pw = GAUGE_WIDTH;	// ゲージの表示幅
-		float ph = GAUGE_HEIGHT;		// ゲージの表示高さ
-
-		float tw = 1.0f;	// テクスチャの幅
-		float th = 1.0f;	// テクスチャの高さ
-		float tx = 0.0f;	// テクスチャの左上X座標
-		float ty = 0.0f;	// テクスチャの左上Y座標
-
-		float R = 0.0f;
-		float G = 0.3f;
-		float B = 0.8f;
-		float Alpha = 1.0f;
-
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
-
-		//ゲージの位置やテクスチャー座標を反映
-		float temp = ((float)g_Player[num].mp / PLAYER_MP_MAX);
-		pw = pw * temp;
-		if (pw >= GAUGE_WIDTH)
-		{
-			R = 0.11765f;
-			G = 0.941f;
-			B = 1.0f;
-		}
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-		SetSpriteLTColor(g_VertexBuffer,
-			px, py, pw, ph,
-			tx, ty, tw, th,
-			XMFLOAT4(R, G, B, Alpha));
-
-		// ポリゴン描画
-		GetDeviceContext()->Draw(4, 0);
-
-
-	}
-
-}
-
-//プレイヤー状態表示
-void DrawPlayerState(int num)
-{
-	DrawPlayerHP(num);
-	DrawPlayerMP(num);
-	{
-		// 下敷きのゲージ（枠的な物）
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
-
-		//ゲージの位置やテクスチャー座標を反映
-		float px = 60.0f;		// ゲージの表示位置X
-		float py = -10.0f;		// ゲージの表示位置Y
-		float pw = 480.0f;	// ゲージの表示幅
-		float ph = 405.0f;		// ゲージの表示高さ
-
-		float tw = 1.0f;	// テクスチャの幅
-		float th = 1.0f;	// テクスチャの高さ
-		float tx = 0.0f;	// テクスチャの左上X座標
-		float ty = 0.0f;	// テクスチャの左上Y座標
-
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-		SetSpriteLTColor(g_VertexBuffer,
-			px, py, pw, ph,
-			tx, ty, tw, th,
-			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-
-		// ポリゴン描画
-		GetDeviceContext()->Draw(4, 0);
-
-	}
-	DrawPlayerIcon();
-}
+////プレイヤー状態表示
+//void DrawPlayerState(int num)
+//{
+//	DrawPlayerHP(num);
+//	DrawPlayerMP(num);
+//	{
+//		// 下敷きのゲージ（枠的な物）
+//		// テクスチャ設定
+//		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
+//
+//		//ゲージの位置やテクスチャー座標を反映
+//		float px = 60.0f;		// ゲージの表示位置X
+//		float py = -10.0f;		// ゲージの表示位置Y
+//		float pw = 480.0f;	// ゲージの表示幅
+//		float ph = 405.0f;		// ゲージの表示高さ
+//
+//		float tw = 1.0f;	// テクスチャの幅
+//		float th = 1.0f;	// テクスチャの高さ
+//		float tx = 0.0f;	// テクスチャの左上X座標
+//		float ty = 0.0f;	// テクスチャの左上Y座標
+//
+//		// １枚のポリゴンの頂点とテクスチャ座標を設定
+//		SetSpriteLTColor(g_VertexBuffer,
+//			px, py, pw, ph,
+//			tx, ty, tw, th,
+//			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+//
+//		// ポリゴン描画
+//		GetDeviceContext()->Draw(4, 0);
+//
+//	}
+//}
 
 
 //ヒットバック処理
@@ -1815,43 +1813,101 @@ void Guard(int num)
 }
 
 
+//
+//void InitPlayerIcon(void)
+//{
+//	g_PlayerIcon.use = FALSE;
+//	g_PlayerIcon.pos = XMFLOAT3(175.0f, 180.0f, 0.0f);
+//	g_PlayerIcon.w = 180.0f;
+//	g_PlayerIcon.h = 180.0f;
+//	g_PlayerIcon.texNo = 2;
+//	g_PlayerIcon.theta = 0.0f;
+//
+//	return;
+//}
+//void UpdatePlayerIcon(void)
+//{
+//	if (g_Player[0].hitting == TRUE)g_PlayerIcon.use = TRUE;
+//	else g_PlayerIcon.use = FALSE;
+//
+//	if (g_PlayerIcon.use == FALSE)
+//	{
+//		g_PlayerIcon.theta = 0.0f;
+//		return;
+//	}
+//
+//	g_PlayerIcon.theta += 1.5f;
+//
+//
+//}
+//
+//void  DrawPlayerIcon(void)
+//{
+//
+//	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_PlayerIcon.texNo]);
+//
+//	float tx = g_PlayerIcon.pos.x;
+//	float ty = g_PlayerIcon.pos.y;
+//	float tw = g_PlayerIcon.w;
+//	float th = g_PlayerIcon.h;
+//
+//	float u = 0.0f;
+//	float v = 0.0f;
+//	float uw = 1.0f;
+//	float vh = 1.0f;
+//
+//	float R = 1.0f;
+//	float G = 1.0f;
+//	float B = 1.0f;
+//	float Alpha = 1.0f;
+//
+//	if (g_PlayerIcon.use == TRUE)
+//	{
+//		G = 0.0f, B = 0.0f, Alpha = 0.7f;
+//
+//		tx += 10 * sin(g_PlayerIcon.theta);
+//		/*	ty += 5 * cos(g_PlayerIcon.theta);*/
+//		tw = g_PlayerIcon.w * (1 + 0.025 * sin(g_PlayerIcon.theta));
+//		th = g_PlayerIcon.h * (1 + 0.025 * sin(
+//			g_PlayerIcon.theta));
+//	}
+//	XMFLOAT4 color = XMFLOAT4(R, G, B, Alpha);
+//
+//	SetSpriteColorRotation(g_VertexBuffer, tx, ty, tw, th, u, v, uw, vh, color, 0.0f);
+//	//// ポリゴン描画
+//	GetDeviceContext()->Draw(4, 0);
+//
+//
+//}
 
-void InitPlayerIcon(void)
+void DrawEyeDark(void)
 {
-	g_PlayerIcon.use = FALSE;
-	g_PlayerIcon.pos = XMFLOAT3(175.0f, 180.0f, 0.0f);
-	g_PlayerIcon.w = 180.0f;
-	g_PlayerIcon.h = 180.0f;
-	g_PlayerIcon.texNo = 2;
-	g_PlayerIcon.theta = 0.0f;
 
-	return;
-}
-void UpdatePlayerIcon(void)
-{
-	if (g_Player[0].hitting == TRUE)g_PlayerIcon.use = TRUE;
-	else g_PlayerIcon.use = FALSE;
+	
+	// 頂点バッファ設定
+	UINT stride = sizeof(VERTEX_3D);
+	UINT offset = 0;
+	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	if (g_PlayerIcon.use == FALSE)
-	{
-		g_PlayerIcon.theta = 0.0f;
-		return;
-	}
+	// マトリクス設定
+	SetWorldViewProjection2D();
 
-	g_PlayerIcon.theta += 1.5f;
+	// プリミティブトポロジ設定
+	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
+	// マテリアル設定
+	MATERIAL material;
+	ZeroMemory(&material, sizeof(material));
+	material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	SetMaterial(material);
 
-}
+	BG* bg = GetBG();
+	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[3]);
 
-void  DrawPlayerIcon(void)
-{
-
-	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_PlayerIcon.texNo]);
-
-	float tx = g_PlayerIcon.pos.x;
-	float ty = g_PlayerIcon.pos.y;
-	float tw = g_PlayerIcon.w;
-	float th = g_PlayerIcon.h;
+	float tx = g_Player[0].pos.x - bg->pos.x;
+	float ty = g_Player[0].pos.y - bg->pos.y;
+	float tw = 7680.0f;
+	float th = 4320.0f;
 
 	float u = 0.0f;
 	float v = 0.0f;
@@ -1863,21 +1919,10 @@ void  DrawPlayerIcon(void)
 	float B = 1.0f;
 	float Alpha = 1.0f;
 
-	if (g_PlayerIcon.use == TRUE)
-	{
-		G = 0.0f, B = 0.0f, Alpha = 0.7f;
-
-		tx += 10 * sin(g_PlayerIcon.theta);
-		/*	ty += 5 * cos(g_PlayerIcon.theta);*/
-		tw = g_PlayerIcon.w * (1 + 0.025 * sin(g_PlayerIcon.theta));
-		th = g_PlayerIcon.h * (1 + 0.025 * sin(
-			g_PlayerIcon.theta));
-	}
 	XMFLOAT4 color = XMFLOAT4(R, G, B, Alpha);
 
 	SetSpriteColorRotation(g_VertexBuffer, tx, ty, tw, th, u, v, uw, vh, color, 0.0f);
 	//// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
-
 
 }
