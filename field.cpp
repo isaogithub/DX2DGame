@@ -71,7 +71,9 @@
 #define DROPITEM_PATTERN_DIVIDE_X				(5)
 #define DROPITEM_PATTERN_DIVIDE_Y				(2)
 #define DROPITEM_PATTERN_MAX					(DROPITEM_PATTERN_DIVIDE_X * DROPITEM_PATTERN_DIVIDE_Y)
-#define TRAPWALL_MAX							(5)
+#define TRAPWALL_MAX							(4)
+#define TRAPWALLSHORT_WIDTH						(160)
+#define TRAPWALLLONG_WIDTH						(240)
 /*******************************************************************************
 * 構造体定義
 *******************************************************************************/
@@ -139,7 +141,7 @@ INTERACT_OB g_IOBgame[IOB_MAX];
 INTERACT_OB g_Door;
 INTERACT_OB g_Heroine;
 
-ITEM2	g_TrapWall[TRAPWALL_MAX];
+TRAPWALL	g_TrapWall[TRAPWALL_MAX];
 //
 
 /*******************************************************************************
@@ -442,11 +444,13 @@ void DrawField(void)
 			GetDeviceContext()->Draw(4, 0);
 		}
 
-		//DrawDropItem();
+		//DrawD ropItem();
 
 		break;
 
 	case MODE_GAME:
+
+		DrawTrapWall();
 
 		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
 
@@ -495,7 +499,6 @@ void DrawField(void)
 		DrawHint();
 		DrawKey();
 		DrawToge();
-		DrawTrapWall();
 
 		break;
 
@@ -1891,41 +1894,96 @@ void SetDropItem(XMFLOAT3 pos)
 
 void InitTrapWall(void)
 {
-	for (int i = 0; i < 2; i++)
+	if (GetMode() != MODE_GAME)return;
+
+	for (int i = 0; i < 1; i++)
 	{
 		g_TrapWall[i].use = TRUE;
-		g_TrapWall[i].pos = XMFLOAT3(200.0f * i ,400.0f ,0.0f);
-		g_TrapWall[i].w = 160;
+		g_TrapWall[i].w = TRAPWALLSHORT_WIDTH;
 		g_TrapWall[i].h = 800;
 		g_TrapWall[i].texNo = 17;
+		g_TrapWall[i].move = XMFLOAT3(0.0f,4.0f,0.0f);
+
 	}
 
-	for (int i = 2; i < TRAPWALL_MAX; i++)
+	for (int i = 1; i < TRAPWALL_MAX; i++)
 	{
 		g_TrapWall[i].use = TRUE;
-		g_TrapWall[i].pos = XMFLOAT3(400.0f * i, 400.0f, 0.0f);
-		g_TrapWall[i].w = 240;
+		g_TrapWall[i].w = TRAPWALLLONG_WIDTH;
 		g_TrapWall[i].h = 800;
 		g_TrapWall[i].texNo = 18;
+		g_TrapWall[i].move = XMFLOAT3(0.0f, 4.0f, 0.0f);
+
 	}
+	g_TrapWall[0].pos = XMFLOAT3(940.0f, 1300.0f, 0.0f);
+
+	g_TrapWall[1].pos = XMFLOAT3(540.0f, 1500.0f, 0.0f);
+	g_TrapWall[2].pos = XMFLOAT3(540.0f + TRAPWALLLONG_WIDTH, 1500.0f, 0.0f);
+	g_TrapWall[3].pos = XMFLOAT3(g_TrapWall[0].pos.x + TRAPWALLSHORT_WIDTH, 1500.0f, 0.0f);
+	
 
 }
 
 void UpdateTrapWall(void)
 {
+	if (GetMode() != MODE_GAME)return;
+	if (GetCheckPoint() != 1)return;//地下二階ではない場合
 	for (int i = 0; i < TRAPWALL_MAX; i++)
 	{
 		if (g_TrapWall[i].use == TRUE)
 		{
-			g_TrapWall[i].pos.y += 1.0f;
+			{//移動
+				XMVECTOR vpos = XMLoadFloat3(&g_TrapWall[i].pos);//前の座標を記憶する
+				XMVECTOR vmove = XMLoadFloat3(&g_TrapWall[i].move);
+				vpos += vmove;
+				XMStoreFloat3(&g_TrapWall[i].pos, vpos);
+			}
 		}
-		else g_TrapWall[i].pos.y -= 1.0f;
+		else
+		{
+			if (i == 0)
+			{
+				g_TrapWall[i].pos.y -= 2.0f;
+			}
+			else
+			g_TrapWall[i].pos.y -= 1.0f;
+
+		}
 
 		XMFLOAT3 trapwallDown = XMFLOAT3(g_TrapWall[i].pos.x,
 			g_TrapWall[i].pos.y + g_TrapWall[i].h / 2, 0.0f);
 		if (FieldCollision(trapwallDown, g_TrapWall[i].w, 10.0f))
 		{
+			//if(i != 0)
 			g_TrapWall[i].use = !(g_TrapWall[i].use);
+		}
+
+		//trapwallDown = XMFLOAT3(g_TrapWall[0].pos.x,
+		//	g_TrapWall[0].pos.y + g_TrapWall[0].h / 2, 0.0f);
+		//if (FieldCollision(trapwallDown, g_TrapWall[0].w, 5.0f))
+		//{
+		//	if (i == 0)
+		//		g_TrapWall[0].use = !(g_TrapWall[0].use);
+		//}
+
+		PLAYER* player = GetPlayer();
+		for (int j = 0; j < PLAYER_MAX; j++)
+		{
+			if (player[j].use == FALSE)continue;
+			XMFLOAT3 underPos = XMFLOAT3(g_TrapWall[i].pos.x, g_TrapWall[i].pos.y + g_TrapWall[i].h / 2, 0.0f);
+			if (CollisionBB(underPos, g_TrapWall[i].w - 10.0f, 10.0f,
+				player[j].pos, player[j].w, player[j].h))
+			{
+				if(g_TrapWall[i].use == TRUE)
+					AddPlayerHP(j, -PLAYER_HP_MAX);
+			}
+
+			if (CollisionBB(g_TrapWall[i].pos, g_TrapWall[i].w, g_TrapWall[i].h,
+				player[j].pos, TEXTURE_COLLISION_WAIST_WIDTH, player[j].h))
+			{
+				player[j].pos = player[j].opos;
+			}
+
 		}
 		
 	}
@@ -1933,6 +1991,8 @@ void UpdateTrapWall(void)
 
 void DrawTrapWall(void)
 {
+	if (GetMode() != MODE_GAME)return;
+
 	BG* bg = GetBG();
 	//とげとげを描画する
 	for (int i = 0; i < TRAPWALL_MAX; i++)

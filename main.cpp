@@ -518,7 +518,10 @@ void Draw(void)
 		DrawPlayer();
 		DrawSkill002();
 		DrawBullet();		// d‚È‚é‡”Ô‚ğˆÓ¯‚µ‚Ä‚Ë
+#ifndef _DEBUG
 		DrawEyeDark();
+#endif // DEBUG
+
 		DrawEffect();
 		if (g_PauseUpdate)
 		{

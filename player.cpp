@@ -313,9 +313,10 @@ HRESULT InitPlayer(void)
 
 		//g_Player[0].pos = XMFLOAT3(1000.0f, 2000.0f, 0.0f);	// 中心点から表示
 		g_Player[0].pos = XMFLOAT3(100.0f, 900.0f, 0.0f);	// 中心点から表示
-#ifndef _DEBUG
+#ifdef _DEBUG
 		//g_Player[0].pos = XMFLOAT3(500.0f, 1900.0f, 0.0f);	// 中心点から表示
 #endif // !_DEBUG
+
 		break;
 	case MODE_BOSS:
 		g_Player[0].pos = XMFLOAT3(100.0f, 500.0f, 0.0f);	// 中心点から表示
@@ -561,6 +562,18 @@ void UpdatePlayer(void)
 					if (g_Player[i].pos.y > bg->h)	g_Player[i].pos.y = bg->h;
 				}
 
+				//if (GetMode() != MODE_BOSS)
+				//{// プレイヤーの立ち位置からMAPのスクロール座標を計算する
+				//	bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
+				//	if (bg->pos.x < 0) bg->pos.x = 0;
+				//	if (bg->pos.x > bg->w - SCREEN_WIDTH) bg->pos.x = bg->w - SCREEN_WIDTH;
+
+				//	bg->pos.y = g_Player[i].pos.y - PLAYER_DISP_Y;
+				//	if (bg->pos.y < 0) bg->pos.y = 0;
+				//	if (bg->pos.y > bg->h - SCREEN_HEIGHT) bg->pos.y = bg->h - SCREEN_HEIGHT;
+
+				//}
+				
 				if (GetMode() == MODE_TUTORIAL)
 				{// プレイヤーの立ち位置からMAPのスクロール座標を計算する
 					bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
@@ -574,14 +587,24 @@ void UpdatePlayer(void)
 					if (bg->pos.x < 0) bg->pos.x = 0;
 					if (bg->pos.x > bg->w - SCREEN_WIDTH) bg->pos.x = bg->w - SCREEN_WIDTH;
 
-					for (int j = 0; j < CHECKPOINT_MAX; j++)
+					int checkPoint = GetCheckPoint();
+					if (checkPoint < CHECKPOINT_MAX)
 					{
-						if (CollisionBB(g_Player[i].pos, g_Player[i].w, g_Player[i].h, g_CheckPoint[j], 1000.0f, 10.0f))
+						if (CollisionBB(g_Player[i].pos, g_Player[i].w, g_Player[i].h, g_CheckPoint[checkPoint], 1000.0f, 10.0f))
 						{
 							SetBGSFrame(0, SCREEN_HEIGHT, 60);
-							
-						}							
+
+						}
 					}
+
+					//for (int j = 0; j < CHECKPOINT_MAX; j++)
+					//{
+					//	if (CollisionBB(g_Player[i].pos, g_Player[i].w, g_Player[i].h, g_CheckPoint[j], 1000.0f, 10.0f))
+					//	{
+					//		SetBGSFrame(0, SCREEN_HEIGHT, 60);
+					//		
+					//	}							
+					//}
 
 				}
 			}

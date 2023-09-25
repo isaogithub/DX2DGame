@@ -40,5 +40,6 @@ void DrawBG(void);
 BG* GetBG(void);
 void SetBGSFrame(float MaxX, float MaxY, float MaxFrame);
 void BGScrool(void);
+int GetCheckPoint(void);
 
 

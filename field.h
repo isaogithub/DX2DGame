@@ -87,6 +87,18 @@ struct ITEM2
 	int			texNo;			// テクスチャ番号
 };
 
+struct TRAPWALL
+{
+	XMFLOAT3	pos;			// ポリゴンの座標
+	BOOL		use;			// true:使っている  false:未使用
+	float		w, h;			// 幅と高さ
+	int			texNo;			// テクスチャ番号
+
+	XMFLOAT3	move;
+
+};
+
+
 struct DROP_ITEM
 {
 	XMFLOAT3	pos;			// ポリゴンの座標
