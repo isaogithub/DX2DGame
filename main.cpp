@@ -16,7 +16,6 @@
 #include "bg.h"
 #include "player.h"
 #include "enemy.h"
-#include "slime.h"
 #include "bullet.h"
 #include "hitscore.h"
 

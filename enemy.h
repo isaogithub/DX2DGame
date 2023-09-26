@@ -24,18 +24,20 @@
 enum ENEMY_TYPE
 {
 	ENEMY_TYPE_SLIME,
+	ENEMY_TYPE_MANDRAKE,
 	ENEMY_TYPE_BOSS,
 	ENEMY_TYPE_MAX,
 };
 
-enum ENEMY_SLIME_STATE
+enum ENEMY_STATE
 {
 	SLIME_STATE_IDLE,
 	SLIME_STATE_WALK,
-	SLIME_STATE_ATTACK001,
-	SLIME_STATE_ATTACK002,
-	SLIME_STATE_HIT,
-	SLIME_STATE_MAX,
+	SLIME_STATE_ATTACK,
+	MANDRAKE_STATE_IDLE,
+	MANDRAKE_STATE_WALK,
+	MANDRAKE_STATE_HIT,
+	ENEMY_STATE_MAX,
 };
 
 enum ENEMY_BOSS_STATE
@@ -52,14 +54,6 @@ enum ENEMY_BOSS_STATE
 	BOSS_STATE_MAX,
 };
 
-enum ENEMY_SKILL
-{
-	ENEMY_SKILL001,
-	ENEMY_SKILL002,
-	ENEMY_SKILL003,
-	ENEMY_SKILL004,
-	ENEMY_SKILLMAX,
-};
 
 enum DAMAGED
 {
@@ -77,6 +71,7 @@ struct ENEMY
 {
 	BOOL		use;			// true:使っている  false:未使用
 	BOOL		display;
+
 	float		w, h;			// 幅と高さ
 	float		countAnim;		// アニメーションカウント
 	int			patternAnim;	// アニメーションパターンナンバー
@@ -100,6 +95,7 @@ struct ENEMY
 	float	movedis;			//停止状態からどれくらい移動したか
 	float	knockmoveX;		//ノックアウトの毎フレイム移動
 
+	BOOL		dir;			//エネミー方向
 	BOOL		stop;
 	float		stopframe;
 	
@@ -117,9 +113,6 @@ struct ENEMY
 	BOOL		skillCnt;
 	BOOL		skilldelaytime;
 
-	BOOL		skill02;
-
-
 	int			attacktime;		//攻撃時間カウンター
 
 
@@ -127,7 +120,6 @@ struct ENEMY
 	float		gravityCnt;
 
 	int			str;			// 攻撃力
-	BOOL		dir;			//エネミー方向
 	XMFLOAT3	move;			// 移動速度
 	XMFLOAT3	amove;			// プレイヤーを見つけた速度
 
@@ -189,12 +181,24 @@ struct BOSS
 // プロトタイプ宣言
 //*****************************************************************************
 HRESULT InitEnemy(void);
-void UninitEnemy(void);
-void UpdateEnemy(void);
-void DrawEnemy(void);
+void InitSlime(void);
+void InitMandrake(void);
 
-ENEMY* GetEnemy(void);
+
+
+void UninitEnemy(void);
+
+void UpdateEnemy(void);
 void UpdateSlime(void);
+void UpdateMandrake(void);
+
+void DrawEnemy(void);
+void DrawSlime(void);
+void DrawMandrake(void);
+
+void SetBomb(XMFLOAT3 pos);
+ENEMY* GetEnemy(void);
+
 
 void InitBoss(void);
 void UpdateBoss(void);
@@ -206,13 +210,13 @@ void AnimetionProcess(int num);
 BOOL IsPlayerClose(int num);
 
 //移動処理
-void MoveProcess(int num);
+void Move(int num);
 //プレイヤーに攻撃されたらの移動パターン
-void MoveProcessP(int num);
+void MoveToPlayer(int num);
 void EnemyMoveSound(int num);
 
 //プレイヤーへの攻撃パターン
-void AttackProcess(int num);
+void Attack(int num);
 //重力処理
 void GravityProcess(int num);
 //ヒットバック処理

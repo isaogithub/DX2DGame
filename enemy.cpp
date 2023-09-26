@@ -26,7 +26,8 @@
 
 #define TEXTURE_MAX					(5)		// テクスチャの数
 #define TEXTURE_SLIME_MAX			(3)		//スライムのテクスチャ数
-
+#define TEXTURE_MANDRAKE_MAX		(3)
+#define TEXTURE_ENEMY_MAX			(TEXTURE_SLIME_MAX + TEXTURE_MANDRAKE_MAX)
 //アニメーション
 #define TEXTURE_PATTERN_DIVIDE_X	(2)		// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y	(1)		// アニメパターンのテクスチャ内分割数（Y)
@@ -51,9 +52,18 @@
 #define TEXTURE_SLIME_FOOT_WIDTH (50)	//足元の当たり判定
 #define TEXTURE_SLIME_FOOT_HEIGHT (20)
 
-
-
 #define	SLIME_HPMAX					(100)
+
+//Mandrake
+#define TEXTURE_MANDRAKE_WIDTH		(60)	//
+#define TEXTURE_MANDRAKE_HEIGHT		(100)	//
+
+#define TEXTURE_MANDRAKE_FOOT_WIDTH (50)	//足元の当たり判定
+#define TEXTURE_MANDRAKE_FOOT_HEIGHT (20)
+
+#define	MANDRAKE_HPMAX					(100)
+
+
 //BOSS
 #define TEXTURE_BOSS_WIDTH	(520)	//
 #define TEXTURE_BOSS_HEIGHT	(520)	//
@@ -130,7 +140,7 @@
 static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static ID3D11ShaderResourceView *g_Texture_Slime[TEXTURE_SLIME_MAX] = { NULL };	// スライムテクスチャ情報
+static ID3D11ShaderResourceView *g_Texture_Enemy[TEXTURE_ENEMY_MAX] = { NULL };	// スライムテクスチャ情報
 static ID3D11ShaderResourceView* g_Texture_Boss[BOSS_STATE_MAX] = { NULL };	// スライムテクスチャ情報
 
 static char *g_TextureName[TEXTURE_MAX] = {
@@ -144,10 +154,13 @@ static char *g_TextureName[TEXTURE_MAX] = {
 };
 
 //Slimeのテクスチャ設定
-static char* g_TextureName_Slime[] = {
+static char* g_TextureName_Enemy[TEXTURE_ENEMY_MAX] = {
 	"data/CHARA/enemy_slime_stand.png",
 	"data/CHARA/enemy_slime_walk.png",
-	"data/CHARA/enemy_slime_attack.png"
+	"data/CHARA/enemy_slime_attack.png",
+	"data/CHARA/Mandrake-Idle.png",
+	"data/CHARA/Mandrake-Walk.png",
+	"data/CHARA/Mandrake-Hit.png",
 };
 
 //BOSSのテクスチャ設定
@@ -164,11 +177,16 @@ static char* g_TextureName_Boss[] = {
 	"data/CHARA/Tree-Down.png",
 };
 
-static	int g_slime_state_AnimeMax[TEXTURE_SLIME_MAX][4] = { //各テクスチャの分割数
+static	int g_Enemy_state_AnimeMax[TEXTURE_SLIME_MAX + TEXTURE_MANDRAKE_MAX][4] = { //各テクスチャの分割数
 //  Pattern_Max	divideY  divideX	animewait
+		//SLIME
 		 1,		1,			1,			10,	    //STAND
 		 4,		1,			4,			 5,		//WALK
 		 7,		1,			7,			 4,		//ENEMY_STATE_ATTACK001
+		//MANDRAKE
+		 4,		1,			4,			 5,	    //STAND
+		 4,		1,			4,			 5,		//WALK
+		 4,		1,			4,			 5,		//ENEMY_STATE_ATTACK001
 };
 
 static	int g_boss_state_AnimeMax[BOSS_STATE_MAX][4] = { //各テクスチャの分割数
@@ -234,7 +252,9 @@ static BOOL	g_DeadBoss;
 
 BOOL g_closeP;
 BOOL g_changeable;
+BOOL g_Redclear;
 
+float g_walkTimer;
 
 //チュートリアルのエネミーの位置
 static XMFLOAT3 g_Tutorial_EPos[] = {
@@ -366,41 +386,60 @@ HRESULT InitEnemy(void)
 	g_Deadtimer = 1.0f;
 	g_DeadBoss = FALSE;
 	g_DeadCnt = 0;
+
+	g_Redclear = FALSE;
+
+	g_walkTimer = 0.0f;
 	//テクスチャ生成
+
+	for (int i = 0; i < TEXTURE_MAX; i++)
+	{
+		g_Texture[i] = NULL;
+		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+			g_TextureName[i],
+			NULL,
+			NULL,
+			&g_Texture[i],
+			NULL);
+	}
+
+	for (int i = 0; i < TEXTURE_ENEMY_MAX; i++)
+	{
+		g_Texture_Enemy[i] = NULL;
+		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+			g_TextureName_Enemy[i],
+			NULL,
+			NULL,
+			&g_Texture_Enemy[i],
+			NULL);
+	}
+
+	for (int i = 0; i < BOSS_STATE_MAX; i++)
+	{
+		g_Texture_Boss[i] = NULL;
+		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+			g_TextureName_Boss[i],
+			NULL,
+			NULL,
+			&g_Texture_Boss[i],
+			NULL);
+	}
+
+
+
 	switch (GetMode())
 	{
 	case MODE_TUTORIAL:
 
 		g_EnemyMax = ENEMY_TUTORIAL_MAX;
 
-
-		for (int i = 0; i < TEXTURE_MAX; i++)
-		{
-			g_Texture[i] = NULL;
-			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName[i],
-				NULL,
-				NULL,
-				&g_Texture[i],
-				NULL);
-		}
-
-		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
-		{
-			g_Texture_Slime[i] = NULL;
-			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName_Slime[i],
-				NULL,
-				NULL,
-				&g_Texture_Slime[i],
-				NULL);
-		}
+		for (int i = 0; i < ENEMY_MAX; i++)
+			g_Enemy[i].type = ENEMY_TYPE_SLIME;
 
 		for (int i = 0; i < ENEMY_MAX; i++)
 		{
 			g_Enemy[i].use = FALSE;
-			g_Enemy[i].state = BOSS_STATE_IDLE;
-			g_Enemy[i].type = ENEMY_TYPE_SLIME;
+			g_Enemy[i].state = SLIME_STATE_IDLE;
 			//座標方向など
 			g_Enemy[i].opos = g_Enemy[i].pos;							//前の座標を保存する
 			g_Enemy[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -455,79 +494,23 @@ HRESULT InitEnemy(void)
 
 		g_EnemyMax = ENEMY_MAX;
 
-		for (int i = 0; i < TEXTURE_MAX; i++)
-		{
-			g_Texture[i] = NULL;
-			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName[i],
-				NULL,
-				NULL,
-				&g_Texture[i],
-				NULL);
-		}
+		//普通のエネミーの初期化処理
 
-		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
-		{
-			g_Texture_Slime[i] = NULL;
-			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName_Slime[i],
-				NULL,
-				NULL,
-				&g_Texture_Slime[i],
-				NULL);
-		}
 
 		for (int i = 0; i < ENEMY_MAX; i++)
-		{
-			g_Enemy[i].use = TRUE;
-			g_Enemy[i].type = ENEMY_TYPE_SLIME;
-			g_Enemy[i].state = BOSS_STATE_IDLE;
-			g_Enemy[i].pos = XMFLOAT3(200.0f + i * 400.0f, 500.0f, 0.0f);	// 中心点から表示
-			g_Enemy[i].opos = g_Enemy[i].pos;							//前の座標を保存する
-			g_Enemy[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
-			g_Enemy[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
-			g_Enemy[i].w = TEXTURE_SLIME_WIDTH;
-			g_Enemy[i].h = TEXTURE_SLIME_HEIGHT;
-			g_Enemy[i].texNo = 0;
-			g_Enemy[i].countAnim = 0;
-			g_Enemy[i].patternAnim = 0;
+			g_Enemy[i].state = ENEMY_TYPE_SLIME;
 
-			//当たった時のヒット
-			g_Enemy[i].clear = FALSE;
-			g_Enemy[i].hit = FALSE;
-			g_Enemy[i].hitting = FALSE;
-			g_Enemy[i].hitCnt = 0;
+		g_Enemy[2].type = ENEMY_TYPE_MANDRAKE;
+		g_Enemy[6].type = ENEMY_TYPE_MANDRAKE;
+		g_Enemy[7].type = ENEMY_TYPE_MANDRAKE;
+		g_Enemy[10].type = ENEMY_TYPE_MANDRAKE;
+		g_Enemy[12].type = ENEMY_TYPE_MANDRAKE;
+		g_Enemy[13].type = ENEMY_TYPE_MANDRAKE;
 
-			g_Enemy[i].attack = FALSE;			//攻撃フラグ
-			g_Enemy[i].attacktime = 0;		//攻撃時間カウンター
+		InitSlime();
+		InitMandrake();
+		//座標セット
 
-			g_Enemy[i].skill = FALSE;
-			g_Enemy[i].skillCnt = 0;
-			g_Enemy[i].skilldelaytime = 0;
-
-			g_Enemy[i].skill02 = FALSE;
-
-			g_Enemy[i].hp = SLIME_HPMAX;
-			g_Enemy[i].damagedType = -1;
-
-
-			g_Enemy[i].dir = CHAR_DIR_RIGHT;
-			g_Enemy[i].move = XMFLOAT3(3.0f, 0.0f, 0.0f);		// 移動量
-			g_Enemy[i].onGround = FALSE;
-			g_Enemy[i].gravityCnt = 0.0f;
-
-
-			g_Enemy[i].movedis = 0.0f;
-			g_Enemy[i].needmovedis = 0.0f;
-			g_Enemy[i].knockmoveX = g_Enemy[i].move.x;
-
-			g_Enemy[i].stop = TRUE;
-			g_Enemy[i].stopframe = 60.0f;
-
-
-			g_EnemyCnt++;
-		}
-		//普通のエネミーの初期化処理
 		g_Enemy[0].pos = XMFLOAT3(2800.0f, 500.0f, 0.0f);
 		g_Enemy[1].pos = XMFLOAT3(3100.0f, 500.0f, 0.0f);
 		g_Enemy[2].pos = XMFLOAT3(3600.0f, 1200.0f, 0.0f);
@@ -537,12 +520,13 @@ HRESULT InitEnemy(void)
 		g_Enemy[6].pos = XMFLOAT3(2200.0f, 1920.0f, 0.0f);
 		g_Enemy[7].pos = XMFLOAT3(2000.0f, 1920.0f, 0.0f);
 		g_Enemy[8].pos = XMFLOAT3(660.0f, 1800.0f, 0.0f);
-		g_Enemy[9].pos = XMFLOAT3(400.0f,1800.0f, 0.0f);
+		g_Enemy[9].pos = XMFLOAT3(400.0f, 1800.0f, 0.0f);
 		g_Enemy[10].pos = XMFLOAT3(550.0f, 2600.0f, 0.0f);
 		g_Enemy[11].pos = XMFLOAT3(1100.0f, 2600.0f, 0.0f);
 		g_Enemy[12].pos = XMFLOAT3(1780.0f, 2800.0f, 0.0f);
 		g_Enemy[13].pos = XMFLOAT3(550.0f, 2000.0f, 0.0f);
 		g_Enemy[14].pos = XMFLOAT3(550.0f, 2000.0f, 0.0f);
+
 		g_EnemyCnt = ENEMY_MAX;
 
 		break;
@@ -553,28 +537,6 @@ HRESULT InitEnemy(void)
 
 		g_EnemyMax = BOSS_MAX;
 
-		for (int i = 0; i < TEXTURE_MAX; i++)
-		{
-			g_Texture[i] = NULL;
-			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName[i],
-				NULL,
-				NULL,
-				&g_Texture[i],
-				NULL);
-		}
-
-		for (int i = 0; i < BOSS_STATE_MAX; i++)
-		{
-			g_Texture_Boss[i] = NULL;
-			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-				g_TextureName_Boss[i],
-				NULL,
-				NULL,
-				&g_Texture_Boss[i],
-				NULL);
-		}
-
 		InitBoss();
 		InitSkill002();
 		InitSkill2Pos();
@@ -582,9 +544,6 @@ HRESULT InitEnemy(void)
 		InitSkill004();
 		g_EnemyCnt = BOSS_MAX;
 
-		break;
-
-	default:
 		break;
 	}
 	
@@ -619,6 +578,125 @@ HRESULT InitEnemy(void)
 	return S_OK;
 }
 
+
+void InitSlime(void)
+{
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		if (g_Enemy[i].type != ENEMY_TYPE_SLIME)continue;
+
+		g_Enemy[i].use = TRUE;
+		g_Enemy[i].state = SLIME_STATE_IDLE;
+		g_Enemy[i].pos = XMFLOAT3(0.0f, 0.0f, 0.0f);	// 中心点から表示
+		g_Enemy[i].opos = g_Enemy[i].pos;							//前の座標を保存する
+
+		//テクスチャ
+		g_Enemy[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		g_Enemy[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		g_Enemy[i].w = TEXTURE_SLIME_WIDTH;
+		g_Enemy[i].h = TEXTURE_SLIME_HEIGHT;
+		g_Enemy[i].texNo = SLIME_STATE_IDLE;
+		g_Enemy[i].countAnim = 0;
+		g_Enemy[i].patternAnim = 0;
+
+		//当たった時のヒット
+		g_Enemy[i].clear = FALSE;
+		g_Enemy[i].hit = FALSE;
+		g_Enemy[i].hitting = FALSE;
+		g_Enemy[i].hitCnt = 0;
+
+		//ステータス
+
+		g_Enemy[i].hp = SLIME_HPMAX;
+		g_Enemy[i].damagedType = -1;
+
+		//攻撃スキル
+		g_Enemy[i].attack = FALSE;			//攻撃フラグ
+		g_Enemy[i].attacktime = 0;		//攻撃時間カウンター
+
+		g_Enemy[i].skill = FALSE;
+		g_Enemy[i].skillCnt = 0;
+		g_Enemy[i].skilldelaytime = 0;
+
+
+
+		//移動
+		g_Enemy[i].dir = CHAR_DIR_RIGHT;
+		g_Enemy[i].move = XMFLOAT3(3.0f, 0.0f, 0.0f);		// 移動量
+		g_Enemy[i].movedis = 0.0f;
+		g_Enemy[i].needmovedis = 0.0f;
+		g_Enemy[i].knockmoveX = g_Enemy[i].move.x;
+
+		g_Enemy[i].onGround = FALSE;
+		g_Enemy[i].gravityCnt = 0.0f;
+
+
+		g_Enemy[i].stop = TRUE;
+		g_Enemy[i].stopframe = 60.0f;
+
+
+
+
+
+	}
+	return;
+
+}
+
+void InitMandrake(void)
+{
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		if (g_Enemy[i].type != ENEMY_TYPE_MANDRAKE)continue;
+
+		g_Enemy[i].use = TRUE;
+		g_Enemy[i].state = MANDRAKE_STATE_IDLE;
+		g_Enemy[i].pos = XMFLOAT3(0.0f, 0.0f, 0.0f);	// 中心点から表示
+		g_Enemy[i].opos = g_Enemy[i].pos;							//前の座標を保存する
+
+		//テクスチャ
+		g_Enemy[i].rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		g_Enemy[i].scl = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		g_Enemy[i].w = TEXTURE_MANDRAKE_WIDTH;
+		g_Enemy[i].h = TEXTURE_MANDRAKE_HEIGHT;
+		g_Enemy[i].texNo = MANDRAKE_STATE_IDLE;
+		g_Enemy[i].countAnim = 0;
+		g_Enemy[i].patternAnim = 0;
+
+		//当たった時のヒット
+		g_Enemy[i].clear = FALSE;
+		g_Enemy[i].hit = FALSE;
+		g_Enemy[i].hitting = FALSE;
+		g_Enemy[i].hitCnt = 0;
+
+		//攻撃
+		g_Enemy[i].attack = FALSE;			//攻撃フラグ
+		g_Enemy[i].attacktime = 0;		//攻撃時間カウンター
+
+		//スキル
+		g_Enemy[i].skill = FALSE;
+		g_Enemy[i].skillCnt = 0;
+		g_Enemy[i].skilldelaytime = 0;
+
+		//ステータス
+		g_Enemy[i].hp = MANDRAKE_HPMAX;
+		g_Enemy[i].damagedType = -1;
+
+
+		//移動
+		g_Enemy[i].dir = CHAR_DIR_RIGHT;
+		g_Enemy[i].move = XMFLOAT3(5.0f, 0.0f, 0.0f);	//移動量
+		g_Enemy[i].movedis = 0.0f;
+		g_Enemy[i].needmovedis = 0.0f;
+		g_Enemy[i].onGround = FALSE;
+		g_Enemy[i].gravityCnt = 0.0f;
+		g_Enemy[i].stop = TRUE;
+		g_Enemy[i].stopframe = 60.0f;
+		g_Enemy[i].knockmoveX = g_Enemy[i].move.x;
+
+	}
+	return;
+}
 //=============================================================================
 // 終了処理
 //=============================================================================
@@ -641,43 +719,24 @@ void UninitEnemy(void)
 			g_Texture[i] = NULL;
 		}
 	}
-
-	switch (GetMode())
+	for (int i = 0; i < TEXTURE_ENEMY_MAX; i++)
 	{
-	case MODE_TUTORIAL:
-		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
+		if (g_Texture_Enemy[i])
 		{
-			if (g_Texture_Slime[i])
-			{
-				g_Texture_Slime[i]->Release();
-				g_Texture_Slime[i] = NULL;
-			}
+			g_Texture_Enemy[i]->Release();
+			g_Texture_Enemy[i] = NULL;
 		}
-		break;
-	case MODE_GAME:
-
-		for (int i = 0; i < TEXTURE_SLIME_MAX; i++)
-		{
-			if (g_Texture_Slime[i])
-			{
-				g_Texture_Slime[i]->Release();
-				g_Texture_Slime[i] = NULL;
-			}
-		}
-		break;
-
-	case MODE_BOSS:
-
-		for (int i = 0; i < BOSS_STATE_MAX; i++)
-		{
-			if (g_Texture_Boss[i])
-			{
-				g_Texture_Boss[i]->Release();
-				g_Texture_Boss[i] = NULL;
-			}
-		}
-		break;
 	}
+
+	for (int i = 0; i < BOSS_STATE_MAX; i++)
+	{
+		if (g_Texture_Boss[i])
+		{
+			g_Texture_Boss[i]->Release();
+			g_Texture_Boss[i] = NULL;
+		}
+	}
+	
 	
 
 	
@@ -701,6 +760,8 @@ void UpdateEnemy(void)
 	case MODE_GAME:
 
 		UpdateSlime();
+		UpdateMandrake();
+
 		break;
 	case MODE_BOSS:
 
@@ -716,6 +777,99 @@ void UpdateEnemy(void)
 
 }
 
+
+void UpdateMandrake(void)
+{
+	for (int i = 0; i < g_EnemyMax; i++)
+	{
+		if (g_Enemy[i].type != ENEMY_TYPE_MANDRAKE) continue;
+		if (g_Enemy[i].use == FALSE)continue;
+		if (g_Enemy[i].hp <= 0 && g_Enemy[i].use == TRUE && GetMode() != MODE_BOSS)
+		{
+			PlaySound(SOUND_LABEL_SE_slimedead);
+			g_Enemy[i].use = FALSE;
+		}
+		// 生きてるエネミーだけ処理をする
+
+		PLAYER* player = GetPlayer();
+		// 地形との当たり判定用に座標のバックアップを取っておく
+		g_Enemy[i].opos = g_Enemy[i].pos;
+		XMFLOAT3 nextpos = g_Enemy[i].pos;
+
+		//アニメーション処理
+		AnimetionProcess(i);
+
+		switch (GetMode())
+		{
+		case MODE_GAME:
+
+			BOOL ans = CollisionBB(player[0].pos, player[0].w, player[0].h, g_Enemy[i].pos, SCREEN_WIDTH, g_Enemy[i].h + 200.0f);
+			if (ans && !g_Enemy[i].hit)
+			{
+				//移動処理
+				float waitMax = 0.5f;
+				g_walkTimer += GetDeltatime();
+				if (g_walkTimer >= waitMax * 1000.0f)
+				{
+					g_walkTimer = 0.0f;
+					PlaySound(SOUND_LABEL_SE_enemyskill02);
+				}
+
+				g_Enemy[i].state = MANDRAKE_STATE_WALK;
+				MoveToPlayer(i);
+			}
+			else
+				g_Enemy[i].state = MANDRAKE_STATE_IDLE;
+			//重力処理
+			GravityProcess(i);
+
+			//ヒットバック処理
+			if (g_Enemy[i].hit)
+			{
+				g_Enemy[i].state = MANDRAKE_STATE_HIT;
+				EHitbackProcess(i);
+			}
+
+			// 移動が終わったらエネミーとの当たり判定
+			{
+				// エネミーの数分当たり判定を行う
+				for (int j = 0; j < PLAYER_MAX; j++)
+				{
+					// 生きてるエネミーと当たり判定をする
+					if (player[j].use == TRUE)
+					{
+						BOOL ans = CollisionBB(g_Enemy[i].pos, g_Enemy[i].w, g_Enemy[i].h,
+							player[j].pos, player[j].w, player[j].h);
+						// 当たっている？
+						if (ans == TRUE)
+						{
+							// 当たった時の処理
+							SetBomb(g_Enemy[i].pos);
+							AddPlayerHP(j, -10);
+							g_Enemy[i].use = FALSE;
+						}
+					}
+				}
+			}
+
+			break;
+		}
+	}
+}
+
+void SetBomb(XMFLOAT3 pos)
+{
+	//for (int i = 0; i < BOMB_MAX; i++)
+	//{
+	//	if (g_bomb[i].use == FALSE)
+	//	{
+	//		g_bomb
+	//	}
+	//}
+	SetEffect3(pos, BOMB2);
+	PlaySound(SOUND_LABEL_SE_enemyskill03_explosion);
+	return;
+}
 //=============================================================================
 // 描画処理
 //=============================================================================
@@ -755,8 +909,8 @@ void DrawEnemy(void)
 				float pw = TEXTURE_WIDTH;		// エネミーの表示幅
 				float ph = TEXTURE_HEIGHT;		// エネミーの表示高さ;
 
-				int animeMaxX = g_slime_state_AnimeMax[g_Enemy[i].state][2];
-				int animeMaxY = g_slime_state_AnimeMax[g_Enemy[i].state][1];
+				int animeMaxX = g_Enemy_state_AnimeMax[g_Enemy[i].state][2];
+				int animeMaxY = g_Enemy_state_AnimeMax[g_Enemy[i].state][1];
 
 				// アニメ
 				float tw = 1.0f / animeMaxX;	// テクスチャの幅
@@ -769,12 +923,12 @@ void DrawEnemy(void)
 				float G = 1.0f;
 				float B = 1.0f;
 
-				GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Slime[g_Enemy[i].state]);
+				GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Enemy[g_Enemy[i].state]);
 
 				//エネミーの位置やテクスチャー座標を反映
 
 				// アニメーション用
-				if (g_Enemy[i].dir == CHAR_DIR_RIGHT && g_Enemy[i].state != BOSS_STATE_IDLE)
+				if (g_Enemy[i].dir == CHAR_DIR_RIGHT && g_Enemy[i].state != SLIME_STATE_IDLE)
 				{
 					tw *= (-1);
 				}
@@ -806,70 +960,8 @@ void DrawEnemy(void)
 		break;
 	case MODE_GAME:
 
-		for (int i = 0; i < ENEMY_MAX; i++)
-		{
-			if (g_Enemy[i].use == TRUE)			// このエネミーが使われている？
-			{									// Yes
-				// テクスチャ設定
-				float px = g_Enemy[i].pos.x - bg->pos.x;	// エネミーの表示位置X;
-				float py = g_Enemy[i].pos.y - bg->pos.y;	// エネミーの表示位置Y;
-				float pw;
-				float ph;
-
-				// アニメ
-				float tw;
-				float th;
-				float tx;
-				float ty;
-
-				int animeMaxX;
-				int animeMaxY;
-
-				float alpha = 1.0f;
-				float R = 1.0f;
-				float G = 1.0f;
-				float B = 1.0f;
-
-				switch (g_Enemy[i].type)
-				{
-				case ENEMY_TYPE_SLIME:
-
-					pw = TEXTURE_WIDTH;		// エネミーの表示幅
-					ph = TEXTURE_HEIGHT;		// エネミーの表示高さ;
-					animeMaxX = g_slime_state_AnimeMax[g_Enemy[i].state][2];
-					animeMaxY = g_slime_state_AnimeMax[g_Enemy[i].state][1];
-					GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Slime[g_Enemy[i].state]);
-					//エネミーの位置やテクスチャー座標を反映
-
-					// アニメーション用
-					tw = 1.0f / animeMaxX;	// テクスチャの幅
-					th = 1.0f / animeMaxY;	// テクスチャの高さ
-					tx = (float)(g_Enemy[i].patternAnim % animeMaxX) * tw;	// テクスチャの左上X座標
-					ty = (float)(g_Enemy[i].patternAnim / animeMaxX) * th;	// テクスチャの左上Y座標
-
-					if (g_Enemy[i].dir == CHAR_DIR_RIGHT && g_Enemy[i].state != BOSS_STATE_IDLE) tw *= (-1);
-					if (g_Enemy[i].clear == TRUE)
-					{
-						alpha = 0.8f;
-						R = 0.5f;
-						G = 0.0f,
-						B = 0.0f;
-					}
-
-					SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-						XMFLOAT4(R, G, B, alpha),
-						g_Enemy[i].rot.z);
-
-					// ポリゴン描画
-					GetDeviceContext()->Draw(4, 0);
-
-					break;
-				}
-
-				DrawEnemyHP(i);
-			}
-		}
-
+		DrawSlime();
+		DrawMandrake();
 		break;
 
 
@@ -881,11 +973,114 @@ void DrawEnemy(void)
 		DrawSkill004();
 		break;
 
+	}
+}
 
 
+void DrawSlime(void)
+{
+	BG* bg = GetBG();
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		if (g_Enemy[i].use == FALSE)continue;			// このエネミーが使われている？
+		if (g_Enemy[i].type != ENEMY_TYPE_SLIME)continue;
 
-	default:
-		break;
+		{									// Yes
+			// テクスチャ設定
+			float px = g_Enemy[i].pos.x - bg->pos.x;	// エネミーの表示位置X;
+			float py = g_Enemy[i].pos.y - bg->pos.y;	// エネミーの表示位置Y;
+			float pw = TEXTURE_WIDTH;;
+			float ph = TEXTURE_HEIGHT;
+
+			// アニメ
+			int animeMaxX = g_Enemy_state_AnimeMax[g_Enemy[i].state][2];
+			int animeMaxY = g_Enemy_state_AnimeMax[g_Enemy[i].state][1];
+			// アニメーション用
+			float tw = 1.0f / animeMaxX;	// テクスチャの幅
+			float th = 1.0f / animeMaxY;	// テクスチャの高さ
+			float tx = (float)(g_Enemy[i].patternAnim % animeMaxX) * tw;	// テクスチャの左上X座標
+			float ty = (float)(g_Enemy[i].patternAnim / animeMaxX) * th;	// テクスチャの左上Y座標
+
+			float alpha = 1.0f;
+			float R = 1.0f;
+			float G = 1.0f;
+			float B = 1.0f;
+
+			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Enemy[g_Enemy[i].state]);
+			//エネミーの位置やテクスチャー座標を反映
+
+			if (g_Enemy[i].dir == CHAR_DIR_RIGHT) tw *= (-1);
+			if (g_Enemy[i].clear == TRUE)
+			{
+				alpha = 0.8f;
+				R = 0.5f;
+				G = 0.0f,
+				B = 0.0f;
+			}
+
+			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+				XMFLOAT4(R, G, B, alpha),
+				g_Enemy[i].rot.z);
+
+			// ポリゴン描画
+			GetDeviceContext()->Draw(4, 0);
+		}
+		DrawEnemyHP(i);
+
+	}
+}
+
+void DrawMandrake(void)
+{
+	BG* bg = GetBG();
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		if (g_Enemy[i].use == FALSE)continue;			// このエネミーが使われている？
+		if (g_Enemy[i].type != ENEMY_TYPE_MANDRAKE)continue;
+
+		{									// Yes
+			// テクスチャ設定
+			float px = g_Enemy[i].pos.x - bg->pos.x;	// エネミーの表示位置X;
+			float py = g_Enemy[i].pos.y - bg->pos.y;	// エネミーの表示位置Y;
+			float pw = g_Enemy[i].w * 2;
+			float ph = g_Enemy[i].h * 2;		// エネミーの表示高さ;
+
+
+			// アニメ
+			int animeMaxX = g_Enemy_state_AnimeMax[g_Enemy[i].state][2];
+			int animeMaxY = g_Enemy_state_AnimeMax[g_Enemy[i].state][1];
+			// アニメーション用
+			float tw = 1.0f / animeMaxX;	// テクスチャの幅
+			float th = 1.0f / animeMaxY;	// テクスチャの高さ
+			float tx = (float)(g_Enemy[i].patternAnim % animeMaxX) * tw;	// テクスチャの左上X座標
+			float ty = (float)(g_Enemy[i].patternAnim / animeMaxX) * th;	// テクスチャの左上Y座標
+
+			float alpha = 1.0f;
+			float R = 1.0f;
+			float G = 1.0f;
+			float B = 1.0f;
+
+			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture_Enemy[g_Enemy[i].state]);
+			//エネミーの位置やテクスチャー座標を反映
+
+			if (g_Enemy[i].dir == CHAR_DIR_RIGHT) tw *= (-1);
+			if (g_Enemy[i].clear == TRUE)
+			{
+				alpha = 0.8f;
+				R = 0.5f;
+				G = 0.0f,
+					B = 0.0f;
+			}
+
+			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+				XMFLOAT4(R, G, B, alpha),
+				g_Enemy[i].rot.z);
+
+			// ポリゴン描画
+			GetDeviceContext()->Draw(4, 0);
+		}
+		DrawEnemyHP(i);
+
 	}
 }
 
@@ -932,7 +1127,7 @@ void UpdateSlime(void)
 				{
 				case MODE_TUTORIAL:
 
-					MoveProcess(i);
+					Move(i);
 					break;
 
 				case MODE_GAME:
@@ -941,7 +1136,7 @@ void UpdateSlime(void)
 					if(ans)
 					{
 						//移動処理
-						MoveProcessP(i);
+						MoveToPlayer(i);
 
 						 ans = CollisionBB(player[0].pos, player[0].w, player[0].h, g_Enemy[i].pos, g_Enemy[i].w + 400.0f, g_Enemy[i].h);
 						if (ans)
@@ -959,8 +1154,8 @@ void UpdateSlime(void)
 							}
 							if (g_Enemy[i].attack == TRUE)
 							{
-								g_Enemy[i].state = SLIME_STATE_ATTACK001;
-								AttackProcess(i);
+								g_Enemy[i].state = SLIME_STATE_ATTACK;
+								Attack(i);
 							}
 							else
 							{
@@ -1355,14 +1550,16 @@ void AnimetionProcess(int num)
 	switch (g_Enemy[num].type)
 	{
 	case ENEMY_TYPE_SLIME:
+	case ENEMY_TYPE_MANDRAKE:
 
-		if (g_Enemy[num].countAnim > g_slime_state_AnimeMax[g_Enemy[num].state][3])
+		if (g_Enemy[num].countAnim > g_Enemy_state_AnimeMax[g_Enemy[num].state][3])
 		{
 			g_Enemy[num].countAnim = 0.0f;
 			// パターンの切り替え
-			g_Enemy[num].patternAnim = (g_Enemy[num].patternAnim + 1) % g_slime_state_AnimeMax[g_Enemy[num].state][0];
+			g_Enemy[num].patternAnim = (g_Enemy[num].patternAnim + 1) % g_Enemy_state_AnimeMax[g_Enemy[num].state][0];
 		}
 		break;
+
 
 	case ENEMY_TYPE_BOSS:
 
@@ -1379,7 +1576,7 @@ void AnimetionProcess(int num)
 }
 
 //移動処理
-void MoveProcess(int num)
+void Move(int num)
 {
 
 	if (g_Enemy[num].use == TRUE)
@@ -1514,6 +1711,7 @@ void EnemyMoveSound(int num)
 	if (g_Enemy[num].walktimer >= waitMax * 1000.0f)
 	{
 		g_Enemy[num].walktimer = 0;
+		
 		PlaySound(SOUND_LABEL_SE_slimemove);
 
 		PLAYER* player = GetPlayer();
@@ -1538,7 +1736,7 @@ void EnemyMoveSound(int num)
 }
 
 //プレイヤーに攻撃されたらの移動パターン
-void MoveProcessP(int num)
+void MoveToPlayer(int num)
 {
 	PLAYER* player = GetPlayer();
 
@@ -1547,7 +1745,12 @@ void MoveProcessP(int num)
 
 		{
 			//状態初期化
-			g_Enemy[num].state = BOSS_STATE_WALK;
+			if(g_Enemy[num].type == ENEMY_TYPE_SLIME)
+				g_Enemy[num].state = SLIME_STATE_WALK;
+
+			else if(g_Enemy[num].type == ENEMY_TYPE_MANDRAKE)
+				g_Enemy[num].state = MANDRAKE_STATE_WALK;
+
 			//エネミーが移動する先はプレイヤーのどころ
 			g_Enemy[num].nextpos = player[0].pos;
 
@@ -1618,7 +1821,7 @@ void MoveProcessP(int num)
 
 
 //プレイヤーへの攻撃パターン
-void AttackProcess(int num)
+void Attack(int num)
 {
 	PLAYER* player = GetPlayer();
 	BOOL ans;
@@ -1627,13 +1830,13 @@ void AttackProcess(int num)
 		if (g_Enemy[num].use == TRUE && g_Enemy[num].attack == TRUE)
 		{
 			//状態初期化
-			g_Enemy[num].state = SLIME_STATE_ATTACK001;
+			g_Enemy[num].state = SLIME_STATE_ATTACK;
 
 			if (g_Enemy[num].attacktime++ >= ATTACK_TIME_MAX)
 			{//攻撃終了確認
 				g_Enemy[num].attacktime = 0;
 				g_Enemy[num].attack = FALSE;
-				g_Enemy[num].state = BOSS_STATE_WALK;
+				g_Enemy[num].state = SLIME_STATE_WALK;
 			}
 			if (g_Enemy[num].attacktime == 20)
 			{
@@ -1671,15 +1874,9 @@ void AttackProcess(int num)
 					}
 					break;
 
-				case ENEMY_TYPE_BOSS:
-
-
-					break;
+				}
+			}
 		}
-
-
-	}
-}
 
 	}
 	
@@ -1697,7 +1894,7 @@ void GravityProcess(int num)
 							//足元の判定
 			nextpos = g_Enemy[num].pos;
 			XMFLOAT3 pfootpos;
-			BOOL ans;
+			BOOL ans = FALSE;
 			switch (g_Enemy[num].type)
 			{
 			case ENEMY_TYPE_SLIME:
@@ -1707,14 +1904,18 @@ void GravityProcess(int num)
 
 				break;
 
+			case ENEMY_TYPE_MANDRAKE:
+
+				pfootpos = XMFLOAT3(g_Enemy[num].pos.x, g_Enemy[num].pos.y + g_Enemy[num].h, 0.0f);//足元の座標
+				ans = FieldCollision(pfootpos, TEXTURE_MANDRAKE_FOOT_WIDTH, TEXTURE_MANDRAKE_FOOT_HEIGHT);
+
+				break;
+
 			case ENEMY_TYPE_BOSS:
 
 				pfootpos = XMFLOAT3(g_Enemy[num].pos.x, g_Enemy[num].pos.y + g_Enemy[num].h / 2 - 10, 0.0f);//足元の座標
 				ans = FieldCollision(pfootpos, TEXTURE_BOSS_FOOT_WIDTH, TEXTURE_BOSS_FOOT_HEIGHT);
 
-				break;
-
-			default:
 				break;
 			}
 
@@ -1931,19 +2132,21 @@ void DrawEnemyHP(int num)
 		switch (g_Enemy[num].type)
 		{
 		case ENEMY_TYPE_SLIME:
+	
 			px = g_Enemy[num].pos.x - bg->pos.x - g_Enemy[num].w / 2;
 			py = g_Enemy[num].pos.y - bg->pos.y - g_Enemy[num].h;
 			pw = 100;	// ゲージの表示幅
 			ph = 5.0f;		// ゲージの表示高さ
 			break;
-		case ENEMY_TYPE_BOSS:
+
+		case ENEMY_TYPE_MANDRAKE:
+
 			px = g_Enemy[num].pos.x - bg->pos.x - g_Enemy[num].w / 2;
-			py = g_Enemy[num].pos.y - bg->pos.y - g_Enemy[num].h / 2;
-			pw = 300;	// ゲージの表示幅
+			py = g_Enemy[num].pos.y - bg->pos.y - g_Enemy[num].h;
+			pw = 150;	// ゲージの表示幅
 			ph = 5.0f;		// ゲージの表示高さ
 			break;
-		default:
-			break;
+
 		}
 
 		float tw = 1.0f;	// テクスチャの幅
@@ -1971,6 +2174,11 @@ void DrawEnemyHP(int num)
 		case ENEMY_TYPE_SLIME:
 			pw = pw * ((float)g_Enemy[num].hp / SLIME_HPMAX);
 			break;
+
+		case ENEMY_TYPE_MANDRAKE:
+			pw = pw * ((float)g_Enemy[num].hp / MANDRAKE_HPMAX);
+			break;
+
 		case ENEMY_TYPE_BOSS:
 			pw = pw * ((float)g_Enemy[num].hp / BOSS_HPMAX);
 			break;

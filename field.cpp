@@ -20,7 +20,6 @@
 #include "player.h"
 
 #include "enemy.h"
-#include "slime.h"
 
 #include "camera.h"
 #include "collision.h"
