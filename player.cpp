@@ -314,7 +314,7 @@ HRESULT InitPlayer(void)
 		//g_Player[0].pos = XMFLOAT3(1000.0f, 2000.0f, 0.0f);	// 中心点から表示
 		g_Player[0].pos = XMFLOAT3(100.0f, 900.0f, 0.0f);	// 中心点から表示
 #ifdef _DEBUG
-		//g_Player[0].pos = XMFLOAT3(500.0f, 1900.0f, 0.0f);	// 中心点から表示
+		g_Player[0].pos = XMFLOAT3(500.0f, 2700.0f, 0.0f);	// 中心点から表示
 #endif // !_DEBUG
 
 		break;
@@ -462,15 +462,6 @@ void UpdatePlayer(void)
 				g_Player[i].state != PLAYER_STATE_GUARD
 				)
 			{
-				//if (GetKeyboardTrigger(DIK_LSHIFT) || IsButtonPressed(0, BUTTON_B))
-				//{
-				//	g_Player[i].dash = TRUE;
-				//	speed *= 4;
-				//	//if (g_Player[i].dir == CHAR_DIR_RIGHT)nextpos.x += 20.0f;
-				//	//else if (g_Player[i].dir == CHAR_DIR_LEFT)nextpos.x -= 20.0f;
-
-				//}
-
 
 				if (GetKeyboardPress(DIK_D) || IsButtonPressed(0, BUTTON_RIGHT))
 				{
@@ -573,7 +564,7 @@ void UpdatePlayer(void)
 				//	if (bg->pos.y > bg->h - SCREEN_HEIGHT) bg->pos.y = bg->h - SCREEN_HEIGHT;
 
 				//}
-				
+
 				if (GetMode() == MODE_TUTORIAL)
 				{// プレイヤーの立ち位置からMAPのスクロール座標を計算する
 					bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
@@ -596,15 +587,6 @@ void UpdatePlayer(void)
 
 						}
 					}
-
-					//for (int j = 0; j < CHECKPOINT_MAX; j++)
-					//{
-					//	if (CollisionBB(g_Player[i].pos, g_Player[i].w, g_Player[i].h, g_CheckPoint[j], 1000.0f, 10.0f))
-					//	{
-					//		SetBGSFrame(0, SCREEN_HEIGHT, 60);
-					//		
-					//	}							
-					//}
 
 				}
 			}
@@ -776,7 +758,7 @@ void UpdatePlayer(void)
 				if (ans == TRUE)
 				{
 					g_Player[i].hit = TRUE;
-					AddPlayerHP(i, -15);
+					AddPlayerHP(i, -15, NOTDEFENDABLE);
 				}
 			}
 		}
@@ -1259,6 +1241,7 @@ void PlayerAttackProcess(int num)
 			//攻撃処理時の当たり判定
 		{
 			ENEMY* enemy = GetEnemy();
+
 			for (int j = 0; j < ENEMY_MAX; j++)
 			{
 				if (enemy[j].use == FALSE)continue;
@@ -1277,7 +1260,30 @@ void PlayerAttackProcess(int num)
 					}
 
 					enemy[j].hit = TRUE;
-					SetEDamagedType(j, DAMAGED_BLADE);
+					SetEDamagedType(j, ENEMY_TYPE_SLIME,DAMAGED_BLADE);
+				}
+			}
+
+			WYVERN* wyvern = GetWyvern();
+
+			for (int j = 0; j < WYVERN_MAX; j++)
+			{
+				if (wyvern[j].use == FALSE)continue;
+				int ans = CollisionBB(blade_pos, PLAYER_ATTACK_EFFECT_WIDTH + 30.0f, PLAYER_ATTACK_EFFECT_HEIGHT + 30.0f,
+					wyvern[j].pos, wyvern[j].w, wyvern[j].h);
+
+				if (ans == TRUE)
+				{
+					if (g_Player[num].time == waitMax)
+					{
+						SetEffect3(g_Player[num].pos, HIT);
+						AddPlayerMP(num, 4.0f);
+						//SetEffect3(g_Player[num].pos, MPUP);
+					}
+
+					wyvern[j].hit = TRUE;
+					
+					SetEDamagedType(j,ENEMY_TYPE_WYVERN,DAMAGED_BLADE);
 				}
 			}
 		}
@@ -1610,13 +1616,35 @@ void PHitbackProcess(int num)
 }
 
 //プレイヤーのHPを引く数の値を引く
-void AddPlayerHP(int num, float hp)
+void AddPlayerHP(int num, float hp,BOOL isdefendable)
 {
 
 	if (g_Player[num].use == FALSE)return;
 	if (g_Player[num].hitting == TRUE)return;
 
-	if (g_Player[num].state != PLAYER_STATE_GUARD)
+	if (isdefendable)
+	{
+		if (g_Player[num].state != PLAYER_STATE_GUARD)
+		{
+			g_Player[num].hp += hp;
+			if (hp < 0)
+			{
+				SetHitScore(hp, g_Player[num].pos, DAMAGE_PLAYER);
+				SetEffect3(g_Player[num].pos, HIT2);
+				if (g_Player[num].hp <= 0.0f)g_Player[num].hp = 0.0f;
+
+			}
+			else
+			{//回復
+				SetHitScore(hp, g_Player[num].pos, HEAL);
+				SetHealEffect(g_Player[num].pos);
+				PlaySound(SOUND_LABEL_SE_heal001);
+				if (g_Player[num].hp >= PLAYER_HP_MAX)g_Player[num].hp = PLAYER_HP_MAX;
+
+			}
+		}
+	}
+	else
 	{
 		g_Player[num].hp += hp;
 		if (hp < 0)
@@ -1635,7 +1663,6 @@ void AddPlayerHP(int num, float hp)
 
 		}
 	}
-
 }
 
 void AddPlayerMP(int num, float mp)
@@ -1752,6 +1779,11 @@ void UltTimer(int num)
 		g_Changable = FALSE;
 		BG* bg = GetBG();
 
+		PLAYER* player = GetPlayer();
+		ENEMY* enemy = GetEnemy();
+		WYVERN* wyvern = GetWyvern();
+		BOSS* boss = GetBoss();
+
 		XMFLOAT3 u1pos = XMFLOAT3(g_Player[0].pos.x - bg->pos.x, g_Player[0].pos.y - bg->pos.y, 0.0f);
 		if (g_SkillFrameCnt == 1)
 		{
@@ -1760,21 +1792,10 @@ void UltTimer(int num)
 		}
 		else if (g_SkillFrameCnt == ULT_CHANT_FRAMEMAX + 30)
 		{
-			if (GetMode() == MODE_BOSS)
+			switch (GetMode())
 			{
-				BOSS* boss = GetBoss();
+			case MODE_TUTORIAL:
 
-				for (int i = 0; i < BOSS_MAX; i++)
-				{
-					boss[i].hit = TRUE;
-
-					SetBDamagedType(DAMAGED_ULT);
-				}
-			}
-			else
-			{
-				ENEMY* enemy = GetEnemy();
-				PLAYER* player = GetPlayer();
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
 					if (enemy[i].use == FALSE)continue;
@@ -1786,27 +1807,68 @@ void UltTimer(int num)
 						)
 					{
 						enemy[i].hit = TRUE;
-						SetEDamagedType(i, DAMAGED_ULT);
+						SetEDamagedType(i, ENEMY_TYPE_SLIME, DAMAGED_ULT);
 					}
 				}
+
+				break;
+			case MODE_GAME:
+
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].use == FALSE)continue;
+
+					if ((enemy[i].pos.x >= (player[0].pos.x - SCREEN_CENTER_X)) &&
+						(enemy[i].pos.x <= (player[0].pos.x + SCREEN_CENTER_X)) &&
+						(enemy[i].pos.y >= (player[0].pos.y - SCREEN_CENTER_Y)) &&
+						(enemy[i].pos.y <= (player[0].pos.y + 100))
+						)
+					{
+						enemy[i].hit = TRUE;
+						SetEDamagedType(i, ENEMY_TYPE_SLIME, DAMAGED_ULT);
+					}
+				}
+
+				for (int i = 0; i < WYVERN_MAX; i++)
+				{
+					if (wyvern[i].use == FALSE)continue;
+
+					if ((wyvern[i].pos.x >= (player[0].pos.x - SCREEN_CENTER_X)) &&
+						(wyvern[i].pos.x <= (player[0].pos.x + SCREEN_CENTER_X)) &&
+						(wyvern[i].pos.y >= (player[0].pos.y - SCREEN_CENTER_Y)) &&
+						(wyvern[i].pos.y <= (player[0].pos.y + 100))
+						)
+					{
+						wyvern[i].hit = TRUE;
+						SetEDamagedType(i, ENEMY_TYPE_WYVERN, DAMAGED_ULT);
+					}
+					
+				}
+
+				break;
+			case MODE_BOSS:
+
+				for (int i = 0; i < BOSS_MAX; i++)
+				{
+					boss[i].hit = TRUE;
+
+					SetBDamagedType(DAMAGED_ULT);
+				}
+				break;
+
 			}
 
-
 			SetEffect3(u1pos, ULT2);
-
 		}
 
 		if (g_SkillFrameCnt % 40 == 0 && g_SkillFrameCnt > ULT_CHANT_FRAMEMAX + 30)
 		{
 			PlaySound(SOUND_LABEL_SE_ulthit);
 		}
-		//if (g_SkillFrameCnt == 90)
-		//{
-		//	SetEffect3();
-		//}
+
 	}
 	return;
-
 
 }
 

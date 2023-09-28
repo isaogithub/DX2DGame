@@ -36,13 +36,15 @@ enum EFFECTTYPE
 	BOSS_DEFEND,
 	BOSS_DEADEFFECT,
 	MPUP,
+	HIT_BULLET,
+	BLACKHOLE_EFFECT,
 	EFFECT_TYPE_MAX,
 };
 
 enum EFFECT_DIR
 {
-	LEFT,
-	RIGHT,
+	EFFECT_LEFT,
+	EFFECT_RIGHT,
 };
 //*****************************************************************************
 // 構造体宣言
@@ -56,7 +58,6 @@ typedef struct	// エフェクト構造体
 	int				CountAnim;					// アニメーションカウント
 
 	int				liveTime;
-
 	bool			isFinish;
 }PARTICLE;
 

@@ -66,6 +66,8 @@ static char* g_TexturName[] = {
 	"data/EFFECT/defend.png",
 	"data/EFFECT/deadeffect.png",
 	"data/EFFECT/effect_mpUp.png",
+	"data/EFFECT/effect_hit_bullet.png",
+	"data/EFFECT/blackhole_effect.png",
 };
 
 
@@ -92,7 +94,9 @@ static ANIMATION g_effectAni[EFFECT_TYPE_MAX] =
 	{5,		1,		2,		 192,	192,},//HIT3
 	{1,		1,		20,		 500,	500,},//BOSS_DEFEND
 	{15,	1,		3,		800,	800,},//BOSS_DeadEffect
-	{5,		4,		1,		192,	192,},//BOSS_DeadEffect
+	{5,		4,		1,		192,	192,},//MPUP
+	{5,		2,		1,		192,	192,},//HIT_BULLET
+	{5,		3,		1,		192,	192,},//HIT_BULLET
 
 };
 
@@ -484,7 +488,7 @@ void InitEffect3(void)
 		g_Effect[i].patternAnim = 0;
 		g_Effect[i].type = 0;
 		g_Effect[i].effectCnt = 0;
-		g_Effect[i].dir = RIGHT;
+		g_Effect[i].dir = EFFECT_RIGHT;
 		g_Effect[i].w = 0.0f;
 		g_Effect[i].h = 0.0f;
 	}
@@ -543,7 +547,7 @@ void DrawEffect3(void)
 			float ty = th * (g_Effect[i].patternAnim / g_effectAni[g_Effect[i].type].divideX);								// テクスチャの左上Y座標
 
 			float Alpha = 1.0f;
-			if (g_Effect[i].dir == LEFT)
+			if (g_Effect[i].dir == EFFECT_LEFT)
 			{
 				tw *= (-1);
 			}
@@ -556,20 +560,18 @@ void DrawEffect3(void)
 			}
 			if (g_Effect[i].type == ULT2 || g_Effect[i].type == ULT1)
 			{
-				if (GetMode() != MODE_BOSS)
-				{
-					px = g_Effect[i].pos.x;
-					py = g_Effect[i].pos.y;
-					pw = 1920.0f;
-					ph = 1080.0f;
-				}
-				else
-				{
-					px = 1920.0f / 2;
-					py = 1080.0f / 2;
-					pw = 1920.0f;
-					ph = 1080.0f;
-				}
+				
+				px = 0.0f;
+				py = 0.0f;
+				pw = 1920.0f;
+				ph = 1080.0f;
+				
+				// １枚のポリゴンの頂点とテクスチャ座標を設定
+				SetSpriteLTColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+					XMFLOAT4(1.0f, 1.0f, 1.0f, Alpha));
+				// ポリゴン描画
+				GetDeviceContext()->Draw(4, 0);
+				continue;
 			}
 			// １枚のポリゴンの頂点とテクスチャ座標を設定
 			SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,

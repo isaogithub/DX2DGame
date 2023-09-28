@@ -185,6 +185,9 @@ void UpdateBullet(void)
 	int bulletCount = 0;				// 処理したバレットの数
 	PLAYER* player = GetPlayer();
 	ENEMY * enemy  =  GetEnemy();
+	WYVERN* wyvern = GetWyvern();
+	BOSS* boss = GetBoss();
+
 	BG* bg = GetBG();
 	for (int i = 0; i < BULLET_MAX; i++)
 	{
@@ -245,29 +248,10 @@ void UpdateBullet(void)
 			}
 			
 			// 当たり判定処理
-			if (GetMode() == MODE_BOSS)
-			{//ボスに当たったら消える
+			switch (GetMode())
+			{
+			case MODE_TUTORIAL:
 
-				BOSS* boss = GetBoss();
-				for (int j = 0; j < BOSS_MAX; j++)
-				{
-					if (boss[j].use == FALSE)continue;
-					int ans = CollisionBB(g_Bullet[i].pos, g_Bullet[i].w, g_Bullet[i].h,
-						boss[j].pos, boss[j].w, boss[j].h);
-
-					if (ans == TRUE)
-					{
-						g_Bullet[i].use = FALSE;
-						boss[j].hit = TRUE;
-
-						SetEffect3(g_Bullet[i].pos, HIT3);
-						SetBDamagedType(DAMAGED_BULLET);
-					}
-				}
-			}
-			else
-			{//ボス以外は吸い込まれる
-				ENEMY* enemy = GetEnemy();
 				for (int j = 0; j < ENEMY_MAX; j++)
 				{// エネミーの数分当たり判定を行う
 					if (enemy[j].use == TRUE)
@@ -280,16 +264,78 @@ void UpdateBullet(void)
 							// 当たった時の処理
 							enemy[j].hit = TRUE;
 
-							SetEDamagedType(j, DAMAGED_BULLET);
+							SetEDamagedType(j, ENEMY_TYPE_SLIME, DAMAGED_BULLET);
 							XMFLOAT3 epos = XMFLOAT3((g_Bullet[i].pos.x + enemy[j].pos.x) * 0.5,
 								(g_Bullet[i].pos.y + enemy[j].pos.y) * 0.5, 0.0f);
-							SetEffect3(g_Bullet[i].pos, HIT2);
+							SetEffect3(g_Bullet[i].pos, BLACKHOLE_EFFECT);
 
 						}
 					}
 				}
+
+				break;
+			case MODE_GAME:
+
+				for (int j = 0; j < ENEMY_MAX; j++)
+				{// エネミーの数分当たり判定を行う
+					if (enemy[j].use == TRUE)
+					{// 生きてるエネミーと当たり判定をする
+
+						BOOL ans = CollisionBB(g_Bullet[i].pos, g_Bullet[i].w, g_Bullet[i].h, enemy[j].pos, enemy[j].w, enemy[j].h);
+						// 当たっている？
+						if (ans == TRUE)
+						{
+							// 当たった時の処理
+							enemy[j].hit = TRUE;
+
+							SetEDamagedType(j, ENEMY_TYPE_SLIME, DAMAGED_BULLET);
+							XMFLOAT3 epos = XMFLOAT3((g_Bullet[i].pos.x + enemy[j].pos.x) * 0.5,
+								(g_Bullet[i].pos.y + enemy[j].pos.y) * 0.5, 0.0f);
+							SetEffect3(g_Bullet[i].pos, BLACKHOLE_EFFECT);
+
+						}
+					}
+				}
+
+				for (int j = 0; j < WYVERN_MAX; j++)
+				{
+					if (wyvern[j].use == FALSE)continue;
+
+					BOOL ans = CollisionBB(g_Bullet[i].pos, g_Bullet[i].w, g_Bullet[i].h,
+						wyvern[j].pos, wyvern[j].w, wyvern[j].h);
+					// 当たっている？
+					if (ans == TRUE)
+					{
+						// 当たった時の処理
+						wyvern[j].hit = TRUE;
+						SetEDamagedType(j, ENEMY_TYPE_WYVERN, DAMAGED_BLACKHOLE);
+
+						SetEffect3(g_Bullet[i].pos, BLACKHOLE_EFFECT);
+						g_Bullet[i].use = FALSE;
+					}
+				}
+
+				break;
+			case MODE_BOSS:
+
+				for (int j = 0; j < BOSS_MAX; j++)
+				{
+					if (boss[j].use == FALSE)continue;
+					int ans = CollisionBB(g_Bullet[i].pos, g_Bullet[i].w, g_Bullet[i].h,
+						boss[j].pos, boss[j].w, boss[j].h);
+
+					if (ans == TRUE)
+					{
+						g_Bullet[i].use = FALSE;
+						boss[j].hit = TRUE;
+
+						SetEffect3(g_Bullet[i].pos, BLACKHOLE_EFFECT);
+						SetBDamagedType(DAMAGED_BULLET);
+					}
+				}
+				break;
 			}
-			
+
 		break;
 		case BULLET_1:
 
@@ -331,8 +377,8 @@ void UpdateBullet(void)
 					{
 						g_Bullet[i].use = FALSE;
 						boss[j].hit = TRUE;
-						SetEffect3(g_Bullet[i].pos, HIT2);
-						SetBDamagedType(DAMAGED_BULLET2);
+						SetEffect3(g_Bullet[i].pos, HIT_BULLET);
+						SetBDamagedType(DAMAGED_BLACKHOLE);
 					}
 				}
 			}
@@ -341,25 +387,43 @@ void UpdateBullet(void)
 				ENEMY* enemy = GetEnemy();
 				for (int j = 0; j < ENEMY_MAX; j++)
 				{// エネミーの数分当たり判定を行う
-					if (enemy[j].use == TRUE)
-					{// 生きてるエネミーと当たり判定をする
+					if (enemy[j].use == FALSE)continue;
+					// 生きてるエネミーと当たり判定をする
 
-						BOOL ans = CollisionBB(g_Bullet[i].pos, g_Bullet[i].w, g_Bullet[i].h, enemy[j].pos, enemy[j].w, enemy[j].h);
-						// 当たっている？
-						if (ans == TRUE)
-						{
-							// 当たった時の処理
-							enemy[j].hit = TRUE;
-							SetEffect3(g_Bullet[i].pos, HIT3);
-							SetEDamagedType(j, DAMAGED_BULLET2);
-							g_Bullet[i].use = FALSE;
-						}
+					BOOL ans = CollisionBB(g_Bullet[i].pos, g_Bullet[i].w, g_Bullet[i].h, enemy[j].pos, enemy[j].w, enemy[j].h);
+					// 当たっている？
+					if (ans == TRUE)
+					{
+						// 当たった時の処理
+						enemy[j].hit = TRUE;
+						SetEffect3(g_Bullet[i].pos, HIT_BULLET);
+						SetEDamagedType(j, ENEMY_TYPE_SLIME, DAMAGED_BLACKHOLE);
+						g_Bullet[i].use = FALSE;
+					}
+				}
+				WYVERN* wyvern = GetWyvern();
+				for (int j = 0; j < WYVERN_MAX; j++)
+				{
+					if (wyvern[j].use == FALSE)continue;
+
+					BOOL ans = CollisionBB(g_Bullet[i].pos, g_Bullet[i].w, g_Bullet[i].h,
+						wyvern[j].pos, wyvern[j].w / 2, wyvern[j].h / 2);
+					// 当たっている？
+					if (ans == TRUE)
+					{
+						// 当たった時の処理
+						wyvern[j].hit = TRUE;
+						SetEDamagedType(j, ENEMY_TYPE_WYVERN, DAMAGED_BLACKHOLE);
+
+						SetEffect3(g_Bullet[i].pos, HIT_BULLET);
+						g_Bullet[i].use = FALSE;
 					}
 				}
 			}
 			//
-			if (FieldCollision(g_Bullet[i].pos, g_Bullet[i].w/2, g_Bullet[i].h / 2))
+			if (FieldCollision(g_Bullet[i].pos, g_Bullet[i].w/4, g_Bullet[i].h / 4))
 			{
+				SetEffect3(g_Bullet[i].pos, HIT_BULLET);
 				g_Bullet[i].use = FALSE;
 			}
 
@@ -431,7 +495,7 @@ void UpdateBullet(void)
 							player[j].hit = TRUE;
 							int str = 10 + rand() % 10;
 #ifndef _DEBUG	// リリース番だけHPを減る
-							AddPlayerHP(j,-str);
+							AddPlayerHP(j,-str, NOTDEFENDABLE);
 #endif
 							
 							g_Bullet[i].use = FALSE;
@@ -496,7 +560,7 @@ void UpdateBullet(void)
 						if (ans == TRUE)
 						{
 							// 当たった時の処理
-							AddPlayerHP(j,20);
+							AddPlayerHP(j,50, DEFENDABLE);
 							SetHealEffect(player[j].pos);
 							SetHitScore(20, player[j].pos, HEAL);
 
@@ -901,7 +965,7 @@ void UpdateNuma(void)
 
 
 						#ifndef _DEBUG	// デバッグ版の時だけFPSを表示する
-						AddPlayerHP(j,-5);
+						AddPlayerHP(j,-5, NOTDEFENDABLE);
 						#endif
 						
 					}

@@ -67,6 +67,12 @@ enum SKILL_TYPE
 	SKILL_SKILL002,
 	SKILL_JUMP,
 };
+
+enum DAMAGETYPE_P
+{
+	NOTDEFENDABLE,
+	DEFENDABLE,
+};
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -184,7 +190,7 @@ BOOL IsWaistCol(int num);
 void PHitbackProcess(int num);
 
 //プレイヤーのHPを引く数の値を引く
-void AddPlayerHP(int num,float hp);
+void AddPlayerHP(int num, float hp, BOOL isdefendable);
 void AddPlayerMP(int num,float mp);
 //プレイヤーのジャンプ状態をリセット
 void JumpReset(void);

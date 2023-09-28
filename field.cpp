@@ -42,7 +42,7 @@
 
 
 #define		TEXTURE_TUTORIAL_MAX	(4)
-#define		TEXTURE_MAX		(19)		// テクスチャの数
+#define		TEXTURE_MAX		(20)		// テクスチャの数
 
 #define		MAPCHIP_TUTORIAL_WIDTH	(10)		//マップチップ
 #define		MAPCHIP_TUTORIAL_HEIGHT	(2)
@@ -58,7 +58,6 @@
 #define		ROPE_MAX	(1)	
 #define		BUS_MAX		(2)
 #define		TOGE_MAX	(5)
-#define		PI			(3.1415926)
 
 #define		TRAP_DAMAGE		(40.0f)
 
@@ -73,6 +72,13 @@
 #define TRAPWALL_MAX							(4)
 #define TRAPWALLSHORT_WIDTH						(160)
 #define TRAPWALLLONG_WIDTH						(240)
+
+
+#define TEXTURE_KEYEFFECT_PATTERN_DIVIDE_X					(5)
+#define TEXTURE_KEYEFFECT_PATTERN_DIVIDE_Y					(4)
+#define TEXTURE_KEYEFFECT_ANIWAIT_MAX							(3)
+#define TEXTURE_KEYEFFECT_PATTERN_MAX					( TEXTURE_KEYEFFECT_PATTERN_DIVIDE_X *  TEXTURE_KEYEFFECT_PATTERN_DIVIDE_Y)
+
 /*******************************************************************************
 * 構造体定義
 *******************************************************************************/
@@ -111,6 +117,7 @@ static char* g_TexturName[TEXTURE_MAX] = {
 	"data/CHARA/hiroine.png",//ヒロインの
 	"data/TEXTURE/trap2_160.png",//ヒロインの
 	"data/TEXTURE/trap3_240.png",//ヒロインの
+	"data/EFFECT/effect_key.png",//ヒロインの
 };
 
 
@@ -133,7 +140,7 @@ static ROPE	g_Rope[ROPE_MAX];
 static TRAP g_Trap[TRAP_MAX];
 static HINT g_Hint;
 static TOGE g_Toge[TOGE_MAX];
-
+static ANIMATION1 g_keyeffect;
 static DROP_ITEM g_Dropitem[DROPITEM_MAX];
 
 INTERACT_OB g_IOBgame[IOB_MAX];
@@ -1175,10 +1182,13 @@ void UpdateTrap(void)
 				//トラップがプレイヤーに当たったら
 				if (CollisionBC(player[i].pos, g_Trap[j].pos, player[i].w / 2, g_Trap[j].w / 2))
 				{
-#ifndef _DEBUG	// リリース番だけHPを減る
+
 					player[i].hit = TRUE;
 					g_Trap[j].use = FALSE;
-					AddPlayerHP(i, -50.0f);
+					AddPlayerHP(i, -50.0f, NOTDEFENDABLE);
+
+#ifndef _DEBUG	// リリース番だけHPを減る
+
 					//player[i].hp -= TRAP_DAMAGE;
 					//SetHitScore(-TRAP_DAMAGE, player[i].pos, DAMAGE_PLAYER);
 					//SetEffect3(g_Trap[j].pos, HIT2);
@@ -1635,33 +1645,74 @@ void DrawIOB(void)
 }
 
 
+void SetKey(XMFLOAT3 pos)
+{
+	if (g_Key.use == FALSE)
+	{
+		g_Key.use = TRUE;
+		g_Key.pos = pos;
+		PlaySound(SOUND_LABEL_SE_key);
+		return;
+	}
+}
 void InitKey(void)
 {
 	if (GetMode() == MODE_GAME)
 	{
-		g_Key.use = TRUE;
+		g_Key.use = FALSE;
 		g_Key.pos = XMFLOAT3(535.0f, 2650.0f, 0.0f);
 		g_Key.texNo = 7;
 		g_Key.w = 160;
 		g_Key.h = 160;
+
+		g_keyeffect.use = FALSE;
+		g_keyeffect.countAnim = 0;
+		g_keyeffect.patternAnim = 0;
+		g_keyeffect.w = 192.0f;
+		g_keyeffect.h = 192.0f;
+
 	}
 }
 void UpdateKey(void)
 {
-	PLAYER* player = GetPlayer();
-	for (int i = 0; i < PLAYER_MAX; i++)
+	if (g_Key.use == FALSE)
 	{
-		if (player[i].use && g_Key.use)
+		g_keyeffect.use = FALSE;
+		return;
+	}
+	else
+	{
+		g_keyeffect.use = TRUE;
+		if (g_keyeffect.use)
 		{
-
-			if (CollisionBB(player[i].pos, player[i].w, player[i].h, g_Key.pos, g_Key.w, g_Key.h))
+			if (g_keyeffect.countAnim++ > TEXTURE_KEYEFFECT_ANIWAIT_MAX)
 			{
-				PlaySound(SOUND_LABEL_SE_key);
-				g_GetKey = TRUE;
-				g_Key.use = FALSE;
+				g_keyeffect.countAnim = 0;
+				g_keyeffect.patternAnim = (g_keyeffect.patternAnim + 1) % TEXTURE_KEYEFFECT_PATTERN_MAX;
+			}
+		}
+
+
+		if (!FieldCollision(g_Key.pos, g_Key.w, g_Key.h))
+		{
+			g_Key.pos.y += 1.0f;
+		}
+		PLAYER* player = GetPlayer();
+		for (int i = 0; i < PLAYER_MAX; i++)
+		{
+			if (player[i].use && g_Key.use)
+			{
+
+				if (CollisionBB(player[i].pos, player[i].w, player[i].h, g_Key.pos, g_Key.w, g_Key.h))
+				{
+					PlaySound(SOUND_LABEL_SE_key);
+					g_GetKey = TRUE;
+					g_Key.use = FALSE;
+				}
 			}
 		}
 	}
+	
 }
 void DrawKey(void)
 {
@@ -1670,30 +1721,58 @@ void DrawKey(void)
 	if (g_Key.use == TRUE)		// このプレイヤーが使われている？
 	{									// Yes
 		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Key.texNo]);
+		float px;
+		float py;
+		float pw;
+		float ph;
 
-		//プレイヤーの位置やテクスチャー座標を反映
-		float px = g_Key.pos.x - bg->pos.x;	// プレイヤーの表示位置X
-		float py = g_Key.pos.y - bg->pos.y;	// プレイヤーの表示位置Y
-		float pw = g_Key.w;		// プレイヤーの表示幅
-		float ph = g_Key.h;		// プレイヤーの表示高さ
+		float tw;
+		float th;
+		float tx;
+		float ty;
+				//鍵のエフェクト
 
-		// アニメーション用
-		//float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
-		//float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
-		//float tx = (float)(g_Player[i].patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
-		//float ty = (float)(g_Player[i].patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
+		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[19]);
 
-		float tw = 1.0f;							// テクスチャの幅	8パターン
-		float th = 1.0f;								// テクスチャの高さ
-		float tx = 0.0f;		// テクスチャの左上X座標
-		float ty = 0.0f;								// テクスチャの左上Y座標
+		px = g_Key.pos.x - bg->pos.x;	// プレイヤーの表示位置X
+		py = g_Key.pos.y - bg->pos.y;	// プレイヤーの表示位置Y
+		pw = g_keyeffect.w;		// プレイヤーの表示幅
+		ph = g_keyeffect.h;		// プレイヤーの表示高さ
+
+		tw = 1.0f / TEXTURE_KEYEFFECT_PATTERN_DIVIDE_X;	// テクスチャの幅
+		th = 1.0f / TEXTURE_KEYEFFECT_PATTERN_DIVIDE_Y;	// テクスチャの高さ
+		tx = (float)(g_keyeffect.patternAnim % TEXTURE_KEYEFFECT_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
+		ty = (float)(g_keyeffect.patternAnim / TEXTURE_KEYEFFECT_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
 
 		// １枚のポリゴンの頂点とテクスチャ座標を設定
 		SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
 			XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f));
 		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
+
+
+
+		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Key.texNo]);
+
+		//プレイヤーの位置やテクスチャー座標を反映
+		px = g_Key.pos.x - bg->pos.x;	// プレイヤーの表示位置X
+		py = g_Key.pos.y - bg->pos.y;	// プレイヤーの表示位置Y
+		pw = g_Key.w;		// プレイヤーの表示幅
+		ph = g_Key.h;		// プレイヤーの表示高さ
+
+		tw = 1.0f;							// テクスチャの幅	8パターン
+		th = 1.0f;								// テクスチャの高さ
+		tx = 0.0f;		// テクスチャの左上X座標
+		ty = 0.0f;								// テクスチャの左上Y座標
+
+		// １枚のポリゴンの頂点とテクスチャ座標を設定
+		SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+			XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f));
+		// ポリゴン描画
+		GetDeviceContext()->Draw(4, 0);
+
+
+
 	}
 
 
@@ -1840,7 +1919,7 @@ void UpdateDropItem(void)
 				player[j].pos, player[j].w, player[j].h))
 			{
 				g_Dropitem[i].use = FALSE;
-				AddPlayerHP(j, 50.0f);
+				AddPlayerHP(j, 50.0f, NOTDEFENDABLE);
 
 			}
 		}
@@ -1926,7 +2005,7 @@ void InitTrapWall(void)
 void UpdateTrapWall(void)
 {
 	if (GetMode() != MODE_GAME)return;
-	if (GetCheckPoint() != 1)return;//地下二階ではない場合
+	if (GetCheckPoint() < 1)return;//地下二階ではない場合
 	for (int i = 0; i < TRAPWALL_MAX; i++)
 	{
 		if (g_TrapWall[i].use == TRUE)
@@ -1974,11 +2053,11 @@ void UpdateTrapWall(void)
 				player[j].pos, player[j].w, player[j].h))
 			{
 				if(g_TrapWall[i].use == TRUE)
-					AddPlayerHP(j, -PLAYER_HP_MAX);
+					AddPlayerHP(j, -PLAYER_HP_MAX, NOTDEFENDABLE);
 			}
 
 			if (CollisionBB(g_TrapWall[i].pos, g_TrapWall[i].w, g_TrapWall[i].h,
-				player[j].pos, TEXTURE_COLLISION_WAIST_WIDTH, player[j].h))
+				player[j].pos, TEXTURE_COLLISION_WAIST_WIDTH - 10.0f, player[j].h))
 			{
 				player[j].pos = player[j].opos;
 			}

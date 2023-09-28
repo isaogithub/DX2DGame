@@ -82,6 +82,11 @@ SOUNDPARAM g_aParam[SOUND_LABEL_MAX] =
 	{ (char*)"data/SE/bossbomb.wav", 0 },
 	{ (char*)"data/SE/mpalerm.wav", 0 },
 	{ (char*)"data/SE/mpUp.wav", 0 },
+	{ (char*)"data/SE/wyvern_wing.wav", 0 },
+	{ (char*)"data/SE/wyvern_roar1.wav", 0 },
+	{ (char*)"data/SE/wyvern_roar2.wav", 0 },
+	{ (char*)"data/SE/wyvern_fire.wav", 0 },
+	{ (char*)"data/SE/wyvern_fireball.wav", 0 },
 
 
 };

@@ -169,7 +169,7 @@ void UpdateBG(void)
 	{
 	case MODE_TUTORIAL:
 
-		g_BG.scrl -= 0.005f;
+		//g_BG.scrl -= 0.005f;
 		break;
 	case MODE_GAME:
 

@@ -64,6 +64,11 @@ enum
 	SOUND_LABEL_SE_bossbomb1,
 	SOUND_LABEL_SE_mp,
 	SOUND_LABEL_SE_mpUP,
+	SOUND_LABEL_SE_Wwing,
+	SOUND_LABEL_SE_Wroar1,
+	SOUND_LABEL_SE_Wroar2,
+	SOUND_LABEL_SE_Wfire,
+	SOUND_LABEL_SE_Wfireball,
 
 
 

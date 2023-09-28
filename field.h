@@ -18,6 +18,7 @@
 #define		MAP_MAX							(3)
 #define		MAP_WIDTH						(SCREEN_WIDTH * 2)	//マップ
 #define		MAP_HEIGHT						(SCREEN_HEIGHT * MAP_MAX)
+#define		PI			(3.1415926)
 
 #define		GRAVITY			(0.02f)
 
@@ -233,7 +234,22 @@ struct SKILL4
 
 };
 
+struct FIREBALL
+{
+	BOOL		use;			// true:使っている  false:未使用
 
+	XMFLOAT3	pos;			// ポリゴンの座標
+	XMFLOAT3	center;			// ポリゴンの座標
+
+	float		w, h;			// 幅と高さ
+	int			texNo;			// テクスチャ番号
+	int			countAnim;		// アニメーションカウント
+	int			patternAnim;	// アニメーションパターンナンバー	
+
+	float		radius;
+	float		theta;
+	float		livetimes;
+};
 
 struct ANI
 {
@@ -249,6 +265,16 @@ struct ANIMATION
 	float		w;
 	float		h;
 };
+
+struct ANIMATION1
+{
+	BOOL	use;
+	int		countAnim;		// アニメーションカウント
+	int		patternAnim;	// アニメーションパターンナンバー	
+	float	w;
+	float	h;
+};
+
 /*******************************************************************************
 * プロトタイプ宣言
 *******************************************************************************/
@@ -317,10 +343,10 @@ void InitHint(void);
 void UpdateHint(void);
 void DrawHint(void);
 
+void SetKey(XMFLOAT3 pos);
 void InitKey(void);
 void UpdateKey(void);
 void DrawKey(void);
-
 
 void InitToge(void);
 void UpdateToge(void);
