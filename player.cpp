@@ -154,11 +154,14 @@ static float	g_gravityCnt;
 static DWORD    g_start_time;
 BOOL			g_Changable;
 BOOL			g_Ult;
-
 static	int		g_BulletDelay;
 static	int		g_SkillFrameCnt;
 static	int		g_BlackholeFCnt;
 static	int		g_GuardFrameCnt;
+
+static float	g_DarkeyeCnt;
+
+
 XMFLOAT3 g_clickpos;
 XMFLOAT3 g_SavePoint[SAVEPOINT_MAX];
 
@@ -195,6 +198,7 @@ HRESULT InitPlayer(void)
 	g_SkillFrameCnt = 0;
 	g_GuardFrameCnt = 0;
 	g_Ult = FALSE;
+	g_DarkeyeCnt = 1.0f; 
 	//テクスチャ生成
 
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -783,6 +787,10 @@ void UpdatePlayer(void)
 		}
 	}
 
+	if (GetCheckPoint() > 1)
+	{
+		g_DarkeyeCnt += 0.01f;
+	}
 	//// 現状をセーブする
 	//if (GetKeyboardTrigger(DIK_S))
 	//{
@@ -1991,8 +1999,8 @@ void DrawEyeDark(void)
 
 	float tx = g_Player[0].pos.x - bg->pos.x;
 	float ty = g_Player[0].pos.y - bg->pos.y;
-	float tw = 7680.0f;
-	float th = 4320.0f;
+	float tw = 7680.0f * g_DarkeyeCnt;
+	float th = 4320.0f * g_DarkeyeCnt;
 
 	float u = 0.0f;
 	float v = 0.0f;

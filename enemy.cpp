@@ -1327,7 +1327,7 @@ void DrawMandrake(void)
 				G = 0.0f,
 					B = 0.0f;
 			}
-
+			if (g_Enemy[i].state == MANDRAKE_STATE_HIT) pw = 200.0f;
 			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
 				XMFLOAT4(R, G, B, alpha),
 				g_Enemy[i].rot.z);
@@ -1900,16 +1900,16 @@ void UpdateBoss(void)
 					{//ª‚ÁŽq
 						g_Boss[i].state = BOSS_STATE_SKILL002;
 					}
-					else if (temp >= 50 && temp < 65)
+					else if (temp >= 50 && temp < 70)
 					{//”š’e
 						g_Boss[i].state = BOSS_STATE_SKILL003;
 					}
-					else if (temp >= 65 && temp < 75)
+					else if (temp >= 70 && temp < 82)
 					{//g˜@’n–
 						g_Boss[i].state = BOSS_STATE_SKILL004;
 						//g_Boss[i].state = BOSS_STATE_WALK;
 					}
-					else if (temp >= 75 && temp < 85)
+					else if (temp >= 82 && temp < 95)
 					{//ƒ_ƒbƒVƒ…
 						SetSkill005(i);
 						g_Boss[i].state = BOSS_STATE_SKILL005;
@@ -2674,8 +2674,9 @@ void EHitbackProcess(int num,int etype)
 				g_Wyvern[num].hitting = FALSE;
 				g_Wyvern[num].clear = FALSE;
 				g_Wyvern[num].hitCnt = 0;
+				return;
 			}
-			if (g_Wyvern[num].hitCnt % 30 == 0)
+			if (g_Wyvern[num].hitCnt % 10 == 0)
 			{
 				g_Wyvern[num].clear = !(g_Wyvern[num].clear);
 			}
